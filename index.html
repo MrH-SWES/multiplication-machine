@@ -252,7 +252,7 @@
     ══════════════════════════════════════ */
     .squeegee {
       position: absolute;
-      width: 10px;
+      width: 6px;
       border-radius: 5px;
       cursor: grab;
       z-index: 30;
@@ -991,10 +991,10 @@ function placeSqueegee(C, R, A, B) {
 
   sq.style.top    = sqTop + 'px';
   sq.style.height = sqHeight + 'px';
-  sq.style.width  = '10px';
+  sq.style.width  = '6px';
   sq.style.display = 'block';
 
-  const sqLeft = 0 + sweepX - 5; 
+  const sqLeft = sweepX - 3; 
   sq.style.left = sqLeft + 'px';
 
   const locked = (sweepState === 'stopped-oo');
@@ -1080,7 +1080,7 @@ function initSqueegeDrag(sq) {
 function updateSqPosition() {
   const sq = document.getElementById('sq-ones');
   if (!sq) return;
-  sq.style.left = (sweepX - 5) + 'px';
+  sq.style.left = (sweepX - 3) + 'px';
 }
 
 function renderSweepFill(C, A, B) {
@@ -1093,25 +1093,31 @@ function renderSweepFill(C, A, B) {
 
   const az = document.getElementById('arrayZone');
 
-  const makeBlockWrapper = (cls, left, top, w, h, blockType, count) => {
+  const makeBlockWrapper = (cls, left, top, w, h, blockType, count, cols, fullW) => {
     const wrapper = document.createElement('div');
     wrapper.className = 'sweep-fill ' + cls;
     wrapper.style.left     = left + 'px';
     wrapper.style.top      = top  + 'px';
     wrapper.style.width    = w + 'px';
     wrapper.style.height   = h + 'px';
-    wrapper.style.overflow       = 'hidden';
-    wrapper.style.display        = 'flex';
-    wrapper.style.flexWrap       = 'wrap';
-    wrapper.style.gap            = '1px';
-    wrapper.style.alignContent   = 'flex-start';
-    wrapper.style.padding        = '2px';
-    wrapper.style.alignItems     = 'flex-start';
-    wrapper.style.justifyContent = 'flex-start';
-    wrapper.style.background     = 'none';
+    wrapper.style.overflow = 'hidden';
+    wrapper.style.background = 'none';
+
+    // Inner grid stays pinned to the right edge of the sliding wrapper
+    const inner = document.createElement('div');
+    inner.style.position = 'absolute';
+    inner.style.right = '0';
+    inner.style.top = '0';
+    inner.style.width = fullW + 'px';
+    inner.style.height = h + 'px';
+    inner.style.display = 'grid';
+    inner.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    inner.style.placeItems = 'center';
+
     for (let i = 0; i < count; i++) {
-      wrapper.appendChild(makeBlockEl(blockType));
+      inner.appendChild(makeBlockEl(blockType));
     }
+    wrapper.appendChild(inner);
     return wrapper;
   };
 
@@ -1122,7 +1128,7 @@ function renderSweepFill(C, A, B) {
     const fillTop   = B.tens * C;
     const fillH     = B.ones * C; 
     if (fillW > 0 && fillH > 0) {
-      az.appendChild(makeBlockWrapper('oo', fillLeft, fillTop, fillW, fillH, 'cube', A.ones * B.ones));
+      az.appendChild(makeBlockWrapper('oo', fillLeft, fillTop, fillW, fillH, 'cube', A.ones * B.ones, A.ones, A.ones * C));
     }
   }
 
@@ -1133,7 +1139,7 @@ function renderSweepFill(C, A, B) {
     const fillTop   = B.tens * C;
     const fillH     = B.ones * C;
     if (fillW > 0 && fillH > 0) {
-      az.appendChild(makeBlockWrapper('to', fillLeft, fillTop, fillW, fillH, 'ten-bar', A.T * B.ones));
+      az.appendChild(makeBlockWrapper('to', fillLeft, fillTop, fillW, fillH, 'ten-bar', A.T * B.ones, A.T, A.T * C));
     }
   }
 }
@@ -1149,7 +1155,7 @@ function showHarvestFill(C, A, B) {
     const h = B.ones * C;
     const val = A.ones * B.ones;
     if (w > 0 && h > 0) {
-      const hf = makeHarvestFill('oo', x, y, w, h, val, C);
+      const hf = makeHarvestFill('oo', x, y, w, h, val, C, A.ones);
       az.appendChild(hf);
       hf.addEventListener('click', () => harvestQuadrant('oo', val, A, B, C));
     }
@@ -1160,29 +1166,25 @@ function showHarvestFill(C, A, B) {
     const h = B.ones * C;
     const val = A.tens * B.ones;
     if (w > 0 && h > 0) {
-      const hf = makeHarvestFill('to', x, y, w, h, val, C);
+      const hf = makeHarvestFill('to', x, y, w, h, val, C, A.T);
       az.appendChild(hf);
       hf.addEventListener('click', () => harvestQuadrant('to', val, A, B, C));
     }
   }
 }
 
-function makeHarvestFill(cls, x, y, w, h, val, C) {
+function makeHarvestFill(cls, x, y, w, h, val, C, cols) {
   const el = document.createElement('div');
   el.className = 'harvest-fill ' + cls;
   el.style.left   = x + 'px';
   el.style.top    = y + 'px';
   el.style.width  = w + 'px';
   el.style.height = h + 'px';
-  el.style.overflow       = 'hidden';
-  el.style.display        = 'flex';
-  el.style.flexWrap       = 'wrap';
-  el.style.gap            = '1px';
-  el.style.alignContent   = 'flex-start';
-  el.style.padding        = '2px';
-  el.style.alignItems     = 'flex-start';
-  el.style.justifyContent = 'flex-start';
-  el.style.background    = 'none';
+  el.style.display = 'grid';
+  el.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  el.style.placeItems = 'center';
+  el.style.background = 'none';
+
   const blockType  = cls === 'oo' ? 'cube' : 'ten-bar';
   const blockCount = cls === 'oo' ? val : Math.floor(val / 10);
   for (let i = 0; i < blockCount; i++) {
