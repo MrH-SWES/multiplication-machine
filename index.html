@@ -725,12 +725,13 @@ function triggerAutoZoom() {
   const bankRightW  = 60;
   const dashFloorH  = 160;
   const scrollbarM  = 16;
+  const PADDING_OFFSET = 64; // Moved to top to prevent ReferenceError
+  const CELL_BASE   = 36;
+  const RAIL_BASE   = CELL_BASE; 
 
   const availW = window.innerWidth  - algPanelW - bankRightW - scrollbarM - 48 - PADDING_OFFSET;
   const availH = window.innerHeight - bankTopH  - dashFloorH - scrollbarM - 48 - PADDING_OFFSET;
 
-  const CELL_BASE = 36, RAIL_BASE = CELL_BASE; // RAIL_BASE now equals CELL_BASE (rp() returns full cell)
-  const PADDING_OFFSET = 64; // 32px padding on each side of .grid-scroller
   const canvasNatW = Math.max(1, A.total) * CELL_BASE + RAIL_BASE + GAP + 32;
   const canvasNatH = Math.max(1, B.total) * CELL_BASE + RAIL_BASE + 32;
 
@@ -739,6 +740,7 @@ function triggerAutoZoom() {
   const newZoom = Math.min(scaleW, scaleH, 2.0); 
   const clamped = Math.max(0.35, +newZoom.toFixed(2));
 
+  // Set the single unified zoom variable
   document.documentElement.style.setProperty('--zoom', clamped);
 
   const slider = document.getElementById('zoomSlider');
