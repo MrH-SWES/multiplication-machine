@@ -16,11 +16,9 @@
       --accent:    #007AFF;
       --border:    rgba(0,0,0,0.07);
 
-      --shadow-block: inset 2px 2px 0 rgba(255,255,255,0.45),
-                      inset -2px -2px 0 rgba(0,0,0,0.13),
-                      0 4px 12px rgba(0,0,0,0.18);
       --spring: cubic-bezier(0.34,1.56,0.64,1);
 
+      /* Colors */
       --hundreds: #2E7D32;
       --tens:     #4169E1;
       --ones:     #DC143C;
@@ -31,12 +29,10 @@
       --rail: calc(18px * var(--zoom));
 
       /* ── Physical block geometry (Phase 2) ── */
-      /* --slot-w: the column pitch of a single unit slot in the bin area  */
-      /* --cube-base: face size of one cube                                 */
-      /* --depth: the isometric extrusion thickness                         */
-      --slot-w:    calc(18px * var(--block-zoom, 1));
-      --cube-base: calc(14px * var(--block-zoom, 1));
-      --depth:     calc(5px  * var(--block-zoom, 1));
+      --block-zoom: 1;
+      --slot-w:    calc(18px * var(--block-zoom));
+      --cube-base: calc(14px * var(--block-zoom));
+      --depth:     calc(5px  * var(--block-zoom));
 
       /* Derived face colours with lighting */
       --ones-top:   #FF3B5C;
@@ -48,6 +44,13 @@
       --hund-top:   #4CAF50;
       --hund-side:  #1B5E20;
       --hund-front: #2E7D32;
+
+      /* UI Shadows */
+      --shadow-block: 
+        inset 2px 2px 0 rgba(255,255,255,0.4),
+        inset -2px -2px 0 rgba(0,0,0,0.12),
+        0 8px 20px rgba(0,0,0,0.12),
+        1px -1px 0 rgba(0,0,0,0.08);
     }
 
     *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
@@ -212,14 +215,13 @@
     }
     @keyframes sqPulse {
       0%,100% { box-shadow: 0 2px 8px rgba(0,0,0,.3), inset 1px 0 0 rgba(255,255,255,.4); }
-      50%      { box-shadow: 0 2px 8px rgba(0,0,0,.3), inset 1px 0 0 rgba(255,255,255,.4),
-                             0 0 0 5px rgba(220,20,60,.25); }
+      50%     { box-shadow: 0 2px 8px rgba(0,0,0,.3), inset 1px 0 0 rgba(255,255,255,.4),
+                            0 0 0 5px rgba(220,20,60,.25); }
     }
 
     /* ══════════════════════════════════════
        QUADRANT fills & ghost labels
     ══════════════════════════════════════ */
-    /* Live fill drawn by the squeegee as it sweeps */
     .sweep-fill {
       position: absolute;
       pointer-events: none;
@@ -227,7 +229,6 @@
     .sweep-fill.oo { background: rgba(220,20,60,.18); }
     .sweep-fill.to { background: rgba(65,105,225,.18); }
 
-    /* Ghost — left behind after harvest */
     .quad-ghost {
       position: absolute;
       display: flex;
@@ -241,7 +242,6 @@
     .quad-ghost.oo { background: rgba(220,20,60,.07);  color: rgba(220,20,60,.55); }
     .quad-ghost.to { background: rgba(65,105,225,.07); color: rgba(65,105,225,.55); }
 
-    /* Harvestable fill — clickable, pulses */
     .harvest-fill {
       position: absolute;
       border-radius: 3px;
@@ -257,7 +257,7 @@
     .harvest-fill.to { background: rgba(65,105,225,.22); color: rgba(65,105,225,.7); }
     @keyframes harvestPulse {
       0%,100% { opacity: 1; }
-      50%      { opacity: .7; }
+      50%     { opacity: .7; }
     }
 
     /* ══════════════════════════════════════
@@ -302,7 +302,6 @@
       padding: 8px 10px;
       transition: border-color .2s, background .2s, transform .15s var(--spring);
       position: relative;
-      /* perspective set here enables rotateX on child blocks */
       perspective: 400px;
       perspective-origin: 50% 20%;
     }
@@ -320,37 +319,28 @@
 
     /* ══════════════════════════════════════
        PHYSICAL BLOCKS — 3-D Isometric
-       All sizes driven by --cube-base and --depth
     ══════════════════════════════════════ */
-
-    /* ── Shared block wrapper ── */
     .cube, .ten-bar, .hundred-flat {
       flex-shrink: 0;
       position: relative;
       display: inline-flex;
-      /* Slight tilt so top face is visible */
       transform: rotateX(10deg);
       transform-style: preserve-3d;
       filter: drop-shadow(0 3px 6px rgba(0,0,0,.28));
+      cursor: grab;
+      box-shadow: var(--shadow-block);
     }
 
-    /* ─────────────────────────────────────
-       CUBE  (ones unit — red)
-       Isometric box built with ::before (top) and ::after (side)
-    ───────────────────────────────────── */
+    /* CUBE (ones unit — red) */
     .cube {
       width:  var(--cube-base);
       height: var(--cube-base);
       background: var(--ones-front);
-      border-radius: 2px;
-      /* Right-side extrusion via box-shadow (cheap, no extra elements) */
+      border-radius: calc(6px * var(--block-zoom));
       box-shadow:
-        /* right face */
         calc(var(--depth) * 0.7) calc(var(--depth) * -0.7) 0 0 var(--ones-side),
-        /* top face highlight */
         0 0 0 1px rgba(255,255,255,.15) inset;
     }
-    /* Top face */
     .cube::before {
       content: '';
       position: absolute;
@@ -360,11 +350,15 @@
       transform: rotateX(-80deg) scaleY(0.45) translateY(-100%);
       transform-origin: top center;
     }
+    .cube::after {
+        content: '1'; 
+        position: absolute; inset: 0; 
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; color: rgba(255,255,255,0.6); 
+        font-size: calc(14px * var(--block-zoom)); pointer-events: none;
+    }
 
-    /* ─────────────────────────────────────
-       TEN-BAR  (tens unit — blue)
-       Contains 10 .ten-seg inner divs to show individual units
-    ───────────────────────────────────── */
+    /* TEN-BAR (tens unit — blue) */
     .ten-bar {
       width:  calc(var(--cube-base) * 10 + var(--depth) * 9 * 0.05);
       height: var(--cube-base);
@@ -372,8 +366,7 @@
       display: flex;
       flex-direction: row;
       gap: 1px;
-      border-radius: 3px;
-      /* overall depth shadow */
+      border-radius: calc(6px * var(--block-zoom));
       filter: drop-shadow(calc(var(--depth)*0.5) calc(var(--depth)*-0.5) 0 var(--tens-side))
               drop-shadow(0 3px 6px rgba(0,0,0,.28));
     }
@@ -383,10 +376,8 @@
       background: var(--tens-front);
       border-radius: 2px;
       position: relative;
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,.12) inset;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset;
     }
-    /* Top face on each segment */
     .ten-seg::before {
       content: '';
       position: absolute;
@@ -396,11 +387,15 @@
       transform: rotateX(-80deg) scaleY(0.45) translateY(-100%);
       transform-origin: top center;
     }
+    .ten-bar::after {
+        content: '10'; 
+        position: absolute; inset: 0; 
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; color: rgba(255,255,255,0.6); 
+        font-size: calc(14px * var(--block-zoom)); pointer-events: none; z-index: 5;
+    }
 
-    /* ─────────────────────────────────────
-       HUNDRED-FLAT  (hundreds — green)
-       10×10 grid of segments, forming a flat slab
-    ───────────────────────────────────── */
+    /* HUNDRED-FLAT (hundreds — green) */
     .hundred-flat {
       width:  calc(var(--cube-base) * 10 + var(--depth) * 0.05);
       height: calc(var(--cube-base) * 10 + var(--depth) * 0.05);
@@ -409,7 +404,7 @@
       grid-template-columns: repeat(10, 1fr);
       grid-template-rows:    repeat(10, 1fr);
       gap: 1px;
-      border-radius: 3px;
+      border-radius: calc(6px * var(--block-zoom));
       filter: drop-shadow(calc(var(--depth)*0.5) calc(var(--depth)*-0.5) 0 var(--hund-side))
               drop-shadow(0 4px 10px rgba(0,0,0,.3));
     }
@@ -427,6 +422,13 @@
       border-radius: 1px 1px 0 0;
       transform: rotateX(-80deg) scaleY(0.45) translateY(-100%);
       transform-origin: top center;
+    }
+    .hundred-flat::after {
+        content: '100'; 
+        position: absolute; inset: 0; 
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; color: rgba(255,255,255,0.6); 
+        font-size: calc(32px * var(--block-zoom)); pointer-events: none; z-index: 5;
     }
 
     /* ── Flying block (fixed, animates to bin) ── */
@@ -493,12 +495,6 @@
                   0 6px 18px rgba(0,0,0,.4);
     }
 
-    /* ── Bin perspective container (enables rotateX on children) ── */
-    .bin {
-      perspective: 300px;
-      perspective-origin: 50% 0%;
-    }
-
     /* ── OVERFLOW STATE ── */
     .bin.overflow {
       border-style: solid !important;
@@ -553,7 +549,6 @@
       line-height: 1.6;
     }
 
-    /* Bin count badge */
     .bin-count {
       position: absolute;
       bottom: -6px; right: -6px;
@@ -569,14 +564,7 @@
       transition: opacity .2s;
     }
     .bin-count.show { opacity: 1; }
-
-    /* Divider between bin groups */
-    .bin-divider {
-      width: 1px;
-      height: 50px;
-      background: var(--border);
-      align-self: center;
-    }
+    .bin-divider { width: 1px; height: 50px; background: var(--border); align-self: center; }
 
     /* ══════════════════════════════════════
        ALGORITHM PANEL
@@ -595,49 +583,25 @@
       overflow-y: auto;
     }
 
-    .alg-problem {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 1px;
-      margin-bottom: 4px;
-    }
+    .alg-problem { width: 100%; display: flex; flex-direction: column; align-items: flex-end; gap: 1px; margin-bottom: 4px; }
     .alg-row { display:flex; align-items:baseline; gap:0; }
-    .alg-sym {
-      font-size:1.9rem; font-weight:900; color:var(--text-light);
-      line-height:42px; margin-right:2px;
-    }
-    .ad {
-      width:30px; height:42px; text-align:center; line-height:42px;
-      font-size:2.3rem; font-weight:800; letter-spacing:-0.04em; border-radius:8px;
-    }
+    .alg-sym { font-size:1.9rem; font-weight:900; color:var(--text-light); line-height:42px; margin-right:2px; }
+    .ad { width:30px; height:42px; text-align:center; line-height:42px; font-size:2.3rem; font-weight:800; letter-spacing:-0.04em; border-radius:8px; }
     .ad.t   { color:var(--tens); }
     .ad.o   { color:var(--ones); }
     .ad.pop { animation:dPop .35s var(--spring) both; }
-    @keyframes dPop {
-      0%   { transform:scale(.5) translateY(8px); opacity:0; }
-      100% { transform:scale(1)  translateY(0);   opacity:1; }
-    }
+    @keyframes dPop { 0% { transform:scale(.5) translateY(8px); opacity:0; } 100% { transform:scale(1)  translateY(0);   opacity:1; } }
     .alg-line { height:2.5px; background:var(--text-main); width:100%; border-radius:2px; margin:5px 0 4px; }
 
     .pp-section { width:100%; display:flex; flex-direction:column; gap:1px; margin-bottom:4px; }
-    .pp-row {
-      display:flex; align-items:baseline; justify-content:flex-end; gap:0;
-      opacity:.12; transition:opacity .4s;
-    }
+    .pp-row { display:flex; align-items:baseline; justify-content:flex-end; gap:0; opacity:.12; transition:opacity .4s; }
     .pp-row.lit { opacity:1; }
-    .pd {
-      width:30px; height:42px; text-align:center; line-height:42px;
-      font-size:2.3rem; font-weight:800; letter-spacing:-0.04em;
-      color:var(--text-main); border-radius:8px;
-    }
+    .pd { width:30px; height:42px; text-align:center; line-height:42px; font-size:2.3rem; font-weight:800; letter-spacing:-0.04em; color:var(--text-main); border-radius:8px; }
     .pd.zero { color:var(--text-light); }
     .pd.pop  { animation:dPop .35s var(--spring) both; }
 
     .sum-line { height:2.5px; background:var(--text-main); width:100%; border-radius:2px; margin:4px 0; opacity:.12; transition:opacity .4s; }
     .sum-line.lit { opacity:1; }
-
     .total-row { display:flex; align-items:baseline; justify-content:flex-end; gap:0; opacity:.12; transition:opacity .4s; margin-bottom:20px; }
     .total-row.lit { opacity:1; }
     .td { width:30px; height:50px; text-align:center; line-height:50px; font-size:2.8rem; font-weight:900; letter-spacing:-0.04em; color:var(--text-main); border-radius:8px; }
@@ -655,36 +619,17 @@
     .dc.oo .dc-val { color:var(--ones); }
     .dc-eq { font-size:.58rem; font-weight:600; color:var(--text-gray); }
 
-    /* Watermark + zoom */
-    .watermark {
-      position:fixed; bottom:8px; left:12px;
-      font-weight:900; font-size:.8rem; letter-spacing:-0.05em;
-      color:var(--text-light); pointer-events:none; z-index:5;
-    }
-    .wbead {
-      width:.2em; height:.2em; border-radius:50%; display:inline-block;
-      margin-left:.04em; margin-bottom:.07em;
-      background:linear-gradient(135deg,#e0e0e0,#a0a0a0,#d0d0d0);
-      box-shadow:0 1px 3px rgba(0,0,0,.2);
-    }
-    .zoom-pill {
-      position:fixed; bottom:8px; right:212px;
-      display:flex; align-items:center; gap:7px;
-      background:var(--surface); border:1px solid var(--border); border-radius:99px;
-      padding:4px 12px; box-shadow:0 2px 8px rgba(0,0,0,.07); z-index:50;
-    }
+    .watermark { position:fixed; bottom:8px; left:12px; font-weight:900; font-size:.8rem; letter-spacing:-0.05em; color:var(--text-light); pointer-events:none; z-index:5; }
+    .wbead { width:.2em; height:.2em; border-radius:50%; display:inline-block; margin-left:.04em; margin-bottom:.07em; background:linear-gradient(135deg,#e0e0e0,#a0a0a0,#d0d0d0); box-shadow:0 1px 3px rgba(0,0,0,.2); }
+    .zoom-pill { position:fixed; bottom:8px; right:212px; display:flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--border); border-radius:99px; padding:4px 12px; box-shadow:0 2px 8px rgba(0,0,0,.07); z-index:50; }
     .zoom-pill svg { color:var(--text-light); }
     .zoom-slider { width:72px; cursor:pointer; accent-color:var(--accent); }
   </style>
 </head>
 <body>
 
-<!-- Top bank -->
 <div class="bank-top" id="bankTop"></div>
-
-<!-- Main row -->
 <div class="main-row">
-
   <div class="canvas-side">
     <div class="grid-row">
       <div class="grid-scroller" id="gridScroller">
@@ -694,38 +639,28 @@
           <div id="arrayZone">
             <svg id="gridSVG"></svg>
           </div>
-          <!-- Squeegees are appended here by JS, inside gCanvas -->
         </div>
       </div>
       <div class="bank-right" id="bankRight"></div>
     </div>
-
-    <!-- Dashboard floor with bins -->
     <div class="dashboard-floor">
       <div class="bin-group">
         <div class="bin-label">Hundreds</div>
-        <div class="bin hundreds-bin" id="binH">
-          <span class="bin-count" id="cntH">0</span>
-        </div>
+        <div class="bin hundreds-bin" id="binH"><span class="bin-count" id="cntH">0</span></div>
       </div>
       <div class="bin-divider"></div>
       <div class="bin-group">
         <div class="bin-label">Tens</div>
-        <div class="bin tens-bin" id="binT">
-          <span class="bin-count" id="cntT">0</span>
-        </div>
+        <div class="bin tens-bin" id="binT"><span class="bin-count" id="cntT">0</span></div>
       </div>
       <div class="bin-divider"></div>
       <div class="bin-group">
         <div class="bin-label">Ones</div>
-        <div class="bin ones-bin" id="binO">
-          <span class="bin-count" id="cntO">0</span>
-        </div>
+        <div class="bin ones-bin" id="binO"><span class="bin-count" id="cntO">0</span></div>
       </div>
     </div>
   </div>
 
-  <!-- Algorithm panel -->
   <div class="alg-panel">
     <div class="alg-lock-overlay" id="algLock">
       <div class="alg-lock-icon">🔒</div>
@@ -783,20 +718,11 @@
 
 <script>
 'use strict';
-// ═══════════════════════════════════════════════════
-// GEOMETRY helpers
-// ═══════════════════════════════════════════════════
-function cp() {
-  return 36 * parseFloat(document.documentElement.style.getPropertyValue('--zoom') || 1);
-}
-function rp() { return cp() * 0.5; }  // rail bar thickness
-const GAP = 8; // px gap between array right edge and right rail
 
-// ═══════════════════════════════════════════════════
-// RAIL STATE
-// topSegs:   [10,10,1,1]  → tens go LEFT, ones go RIGHT  → total = A
-// rightSegs: [10,10,1,1]  → tens go TOP,  ones go BOTTOM → total = B
-// ═══════════════════════════════════════════════════
+function cp() { return 36 * parseFloat(document.documentElement.style.getPropertyValue('--zoom') || 1); }
+function rp() { return cp() * 0.5; }
+const GAP = 8; 
+
 let topSegs   = [];
 let rightSegs = [];
 
@@ -812,49 +738,17 @@ function factorB() {
   return { total:u, tens:Math.floor(u/10)*10, ones:u%10, T:Math.floor(u/10), O:u%10 };
 }
 
-// ═══════════════════════════════════════════════════
-// SQUEEGEE STATE  (Phase 1: red squeegee only)
-//
-// The squeegee is positioned in gCanvas coordinates.
-// It starts at the RIGHT edge of the array and drags LEFT.
-//
-// Hard stops:
-//   Stop 1: at x = A.tens * cp()   (the ones/tens column boundary)
-//            → locks until the oo quadrant is harvested
-//   Stop 2: at x = 0               (the left edge of the array)
-//            → after oo harvested, can sweep through tens zone
-//
-// sweepX: current left edge of the squeegee (in array-zone coords)
-//         The squeegee's left CSS position in gCanvas = arrayLeft + sweepX
-// ═══════════════════════════════════════════════════
-
-// Sweep state machine
-// 'idle'          – rails not set, no squeegee shown
-// 'ready'         – squeegee sitting at right edge, ready to drag
-// 'sweeping-oo'   – dragging left through the ones-cols zone
-// 'stopped-oo'    – locked at A.tens boundary, oo fill ready to harvest
-// 'harvested-oo'  – oo done, unlocked to continue into tens zone
-// 'sweeping-to'   – dragging left through the tens-cols zone
-// 'stopped-to'    – locked at left edge, to fill ready to harvest
-// 'done'          – both sweeps harvested
 let sweepState = 'idle';
-let sweepX     = 0;   // current x of squeegee left edge, in arrayZone coords
+let sweepX     = 0;
 
-// ═══════════════════════════════════════════════════
-// BIN STATE
-// ═══════════════════════════════════════════════════
 let binOnes     = 0;
 let binTens     = 0;
 let binHundreds = 0;
 
-// ═══════════════════════════════════════════════════
-// AUTO-ZOOM  — fits the active grid perfectly in viewport
-// ═══════════════════════════════════════════════════
 function triggerAutoZoom() {
   const A = factorA(), B = factorB();
   if (!A.total || !B.total) return;
 
-  // Available canvas area (subtract alg panel, banks, floor, scrollbar margin)
   const algPanelW   = 200;
   const bankTopH    = 60;
   const bankRightW  = 60;
@@ -864,35 +758,28 @@ function triggerAutoZoom() {
   const availW = window.innerWidth  - algPanelW - bankRightW - scrollbarM - 48;
   const availH = window.innerHeight - bankTopH  - dashFloorH - scrollbarM - 48;
 
-  // At zoom=1, cell=36px, rail=18px. Canvas width = A.total*36 + rail + GAP + 32
   const CELL_BASE = 36, RAIL_BASE = 18;
   const canvasNatW = A.total * CELL_BASE + RAIL_BASE + GAP + 32;
   const canvasNatH = B.total * CELL_BASE + RAIL_BASE + 32;
 
   const scaleW = availW / canvasNatW;
   const scaleH = availH / canvasNatH;
-  const newZoom = Math.min(scaleW, scaleH, 2.0); // cap at 2×
+  const newZoom = Math.min(scaleW, scaleH, 2.0); 
   const clamped = Math.max(0.35, +newZoom.toFixed(2));
 
-  // Apply to both --zoom (grid) and --block-zoom (blocks)
   document.documentElement.style.setProperty('--zoom', clamped);
   document.documentElement.style.setProperty('--block-zoom', Math.min(clamped * 0.85, 1.4));
 
-  // Sync the manual slider too
   const slider = document.getElementById('zoomSlider');
   if (slider) slider.value = clamped;
 }
 
-// ═══════════════════════════════════════════════════
-// LAYOUT  — called whenever rails change or zoom changes
-// ═══════════════════════════════════════════════════
 function layout() {
   const C = cp(), R = rp();
   const A = factorA(), B = factorB();
   const W = A.total * C;
   const H = B.total * C;
 
-  // Canvas size: [topRail above array] [array] [gap + rightRail to the right]
   const canvasW = W + GAP + R + 32;
   const canvasH = R + H + 32;
 
@@ -900,14 +787,12 @@ function layout() {
   canvas.style.width  = canvasW + 'px';
   canvas.style.height = canvasH + 'px';
 
-  // Top rail: x=0 (from canvas left), y=0
   const topRail = document.getElementById('topRail');
   topRail.style.top    = '0';
   topRail.style.left   = '0';
   topRail.style.height = R + 'px';
   topRail.style.width  = (W || 60) + 'px';
 
-  // Array zone: below top rail
   const arrayLeft = 0;
   const arrayTop  = R;
   const az = document.getElementById('arrayZone');
@@ -922,7 +807,6 @@ function layout() {
   svg.setAttribute('width',  W || 0);
   svg.setAttribute('height', H || 0);
 
-  // Right rail: to the right of the array, same top as array
   const rightRail = document.getElementById('rightRail');
   rightRail.style.top   = arrayTop + 'px';
   rightRail.style.left  = (W + GAP) + 'px';
@@ -937,9 +821,6 @@ function layout() {
   renderSweepFill(C, A, B);
 }
 
-// ═══════════════════════════════════════════════════
-// GRID
-// ═══════════════════════════════════════════════════
 function drawGrid(C, A, B) {
   const svg = document.getElementById('gridSVG');
   svg.innerHTML = '';
@@ -964,14 +845,10 @@ function drawGrid(C, A, B) {
     ln(0,y*C,W,y*C, maj?'rgba(0,0,0,.22)':'rgba(0,0,0,.07)', maj?1.5:.5);
   }
 
-  // Dashed quadrant dividers
   if (A.T>0 && A.O>0) ln(A.tens*C,0,A.tens*C,H,'rgba(0,0,0,.32)',2,'7 4');
   if (B.T>0 && B.O>0) ln(0,B.tens*C,W,B.tens*C,'rgba(0,0,0,.32)',2,'7 4');
 }
 
-// ═══════════════════════════════════════════════════
-// RAILS
-// ═══════════════════════════════════════════════════
 function dropHandler(axis) {
   return {
     over:  e => { e.preventDefault(); e.currentTarget.classList.add('over'); },
@@ -1051,32 +928,31 @@ function addRight(units) {
 function resetSweep() {
   sweepState = 'idle';
   sweepX = 0;
-  // Remove existing squeegee
   document.querySelectorAll('.squeegee').forEach(e=>e.remove());
-  // Remove fills
   document.querySelectorAll('.sweep-fill,.harvest-fill,.quad-ghost').forEach(e=>e.remove());
 }
 
-// ═══════════════════════════════════════════════════
-// SQUEEGEE  — placement & drag
-// ═══════════════════════════════════════════════════
 function placeSqueegee(C, R, A, B) {
-  // Only show if both rails have blocks
   if (!A.total || !B.total) return;
 
-  // Transition to 'ready' when rails are set and we were idle
   if (sweepState === 'idle') {
     sweepState = 'ready';
-    sweepX = A.total * C; // start at the RIGHT edge of the array
+    sweepX = A.total * C; 
   }
 
-  // Red squeegee always spans the ones-rows of B (bottom region)
-  // Height = B.ones rows. If B has no tens (pure ones number), spans all rows.
-  const sqHeight = B.ones > 0 ? B.ones * C : B.total * C;
-  // Y position of squeegee = top of the ones-rows zone
-  const sqTop    = R + (B.tens * C); // in gCanvas coords (rail height + tens rows)
+  // --- BUG 1 FIX: Zero-Value Squeegee Logic ---
+  if (B.O === 0) {
+    const sq = document.getElementById('sq-ones');
+    if (sq) sq.style.display = 'none';
+    if (sweepState === 'ready' || sweepState === 'idle') {
+        sweepState = 'done'; // Skip ones sweep entirely, proceed to tens (Phase 3)
+    }
+    return;
+  }
 
-  // Remove & re-create (cheap, keeps event listeners clean)
+  const sqHeight = B.O * C;
+  const sqTop    = R + (B.tens * C); 
+
   let sq = document.getElementById('sq-ones');
   if (!sq) {
     sq = document.createElement('div');
@@ -1089,12 +965,11 @@ function placeSqueegee(C, R, A, B) {
   sq.style.top    = sqTop + 'px';
   sq.style.height = sqHeight + 'px';
   sq.style.width  = '10px';
+  sq.style.display = 'block';
 
-  // X position = arrayLeft + sweepX, minus half the squeegee width for centering
-  const sqLeft = 0 + sweepX - 5; // arrayLeft=0
+  const sqLeft = 0 + sweepX - 5; 
   sq.style.left = sqLeft + 'px';
 
-  // Lock/unlock based on state
   const locked = (sweepState === 'stopped-oo');
   sq.classList.toggle('locked', locked);
   sq.classList.toggle('pulsing',
@@ -1109,7 +984,7 @@ function initSqueegeDrag(sq) {
   const onStart = (clientX) => {
     const A = factorA();
     if (!A.total) return;
-    if (sweepState === 'stopped-oo') return; // locked
+    if (sweepState === 'stopped-oo') return; 
 
     dragging = true;
     startClientX = clientX;
@@ -1127,12 +1002,8 @@ function initSqueegeDrag(sq) {
 
     let newX = startSweepX + dx;
 
-    // Hard stop logic
     if (sweepState === 'ready' || sweepState === 'sweeping-oo') {
-      // Can only sweep left, can't go right of start position
       newX = Math.min(A.total * C, newX);
-
-      // Stop at the ones/tens boundary (A.tens * C) if there is one
       const stopX = A.T > 0 ? A.tens * C : 0;
       if (newX <= stopX) {
         newX = stopX;
@@ -1142,7 +1013,6 @@ function initSqueegeDrag(sq) {
         sweepState = 'sweeping-oo';
       }
     } else if (sweepState === 'harvested-oo' || sweepState === 'sweeping-to') {
-      // Can sweep left from where we were (A.tens * C) to 0
       newX = Math.min(A.tens * C, newX);
       newX = Math.max(0, newX);
       if (newX === 0) {
@@ -1172,12 +1042,9 @@ function initSqueegeDrag(sq) {
     updateSqPosition();
   };
 
-  // Mouse
   sq.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX); });
   document.addEventListener('mousemove', e => onMove(e.clientX));
   document.addEventListener('mouseup', onEnd);
-
-  // Touch
   sq.addEventListener('touchstart', e => { e.preventDefault(); onStart(e.touches[0].clientX); }, {passive:false});
   document.addEventListener('touchmove', e => { if(dragging) { e.preventDefault(); onMove(e.touches[0].clientX); } }, {passive:false});
   document.addEventListener('touchend', onEnd);
@@ -1189,27 +1056,22 @@ function updateSqPosition() {
   sq.style.left = (sweepX - 5) + 'px';
 }
 
-// ═══════════════════════════════════════════════════
-// SWEEP FILL  — live fill as squeegee drags
-// ═══════════════════════════════════════════════════
 function renderSweepFill(C, A, B) {
-  // Remove live fills (not ghosts or harvest fills)
   document.querySelectorAll('.sweep-fill').forEach(e=>e.remove());
 
   if (!A.total || !B.total) return;
   if (sweepState==='idle'||sweepState==='ready') return;
-  if (sweepState==='stopped-oo'||sweepState==='stopped-to') return; // harvest fill handles it
+  if (sweepState==='stopped-oo'||sweepState==='stopped-to') return; 
   if (sweepState==='done') return;
 
   const az = document.getElementById('arrayZone');
 
   if (sweepState==='sweeping-oo' || sweepState==='harvested-oo') {
-    // Fill the oo zone: from sweepX to A.total, rows B.tens to B.total
     const fillLeft  = sweepX;
     const fillRight = A.total * C;
     const fillW     = fillRight - fillLeft;
     const fillTop   = B.tens * C;
-    const fillH     = B.ones * C || B.total * C; // if no tens, full height
+    const fillH     = B.ones * C; 
     if (fillW > 0 && fillH > 0) {
       const fill = document.createElement('div');
       fill.className = 'sweep-fill oo';
@@ -1222,7 +1084,6 @@ function renderSweepFill(C, A, B) {
   }
 
   if (sweepState==='sweeping-to') {
-    // Fill the to zone: from sweepX to A.tens, rows B.tens to B.total
     const fillLeft  = sweepX;
     const fillRight = A.tens * C;
     const fillW     = fillRight - fillLeft;
@@ -1240,29 +1101,22 @@ function renderSweepFill(C, A, B) {
   }
 }
 
-// ═══════════════════════════════════════════════════
-// HARVEST FILL  — shown when squeegee is locked at a stop
-// ═══════════════════════════════════════════════════
 function showHarvestFill(C, A, B) {
-  // Remove any previous harvest fill
   document.querySelectorAll('.harvest-fill').forEach(e=>e.remove());
-
   const az = document.getElementById('arrayZone');
 
   if (sweepState === 'stopped-oo') {
-    // The oo quadrant: x from A.tens to A.total, y from B.tens to B.total
     const x = A.tens * C;
     const y = B.tens * C;
     const w = A.ones * C;
-    const h = (B.ones > 0 ? B.ones : B.total) * C;
-    const val = A.ones * (B.ones > 0 ? B.ones : B.total);
+    const h = B.ones * C;
+    const val = A.ones * B.ones;
     if (w > 0 && h > 0) {
       const hf = makeHarvestFill('oo', x, y, w, h, val, C);
       az.appendChild(hf);
       hf.addEventListener('click', () => harvestQuadrant('oo', val, A, B, C));
     }
   } else if (sweepState === 'stopped-to') {
-    // The to quadrant: x from 0 to A.tens, y from B.tens to B.total
     const x = 0;
     const y = B.tens * C;
     const w = A.tens * C;
@@ -1288,30 +1142,24 @@ function makeHarvestFill(cls, x, y, w, h, val, C) {
   return el;
 }
 
-// ═══════════════════════════════════════════════════
-// HARVEST  — click fill → spawn discrete blocks → ghost
-// ═══════════════════════════════════════════════════
 function harvestQuadrant(cls, val, A, B, C) {
   document.querySelectorAll('.harvest-fill').forEach(e=>e.remove());
 
-  // ── Determine quadrant screen rect for fly-from origin ──
   const az = document.getElementById('arrayZone');
   const azRect = az.getBoundingClientRect();
 
   let qx,qy,qw,qh;
   if (cls === 'oo') {
     qx = A.tens*C; qy = B.tens*C;
-    qw = A.ones*C; qh = (B.ones>0?B.ones:B.total)*C;
+    qw = A.ones*C; qh = B.ones*C;
   } else {
     qx = 0; qy = B.tens*C;
     qw = A.tens*C; qh = B.ones*C;
   }
 
-  // Origin for fly animation: center of quadrant in viewport coords
   const originX = azRect.left + qx + qw/2;
   const originY = azRect.top  + qy + qh/2;
 
-  // ── Leave ghost ──
   const ghost = document.createElement('div');
   ghost.className = 'quad-ghost ' + cls;
   ghost.style.left      = qx+'px'; ghost.style.top    = qy+'px';
@@ -1320,16 +1168,11 @@ function harvestQuadrant(cls, val, A, B, C) {
   ghost.textContent     = val;
   az.appendChild(ghost);
 
-  // ── Determine block type & target bin ──
-  // oo (ones×ones) → .cube → ones bin
-  // to (tens×ones or ones×tens) → .ten-bar → tens bin
-  // We only support oo and to quadrants in Phase 1/2
   const blockType = (cls === 'oo') ? 'cube' : 'ten-bar';
   const binType   = (cls === 'oo') ? 'ones' : 'tens';
 
   spawnBlocks(blockType, val, binType, originX, originY);
 
-  // ── Advance squeegee state machine ──
   if (cls === 'oo') {
     sweepState = 'harvested-oo';
     const sq = document.getElementById('sq-ones');
@@ -1347,12 +1190,6 @@ function harvestQuadrant(cls, val, A, B, C) {
   renderSweepFill(C, A, B);
 }
 
-// ═══════════════════════════════════════════════════
-// STEP 1 — spawnBlocks(type, count, binType, originX, originY)
-// Creates discrete DOM elements and animates them into the bin
-// ═══════════════════════════════════════════════════
-
-/** Build the correct DOM element for a given block type */
 function makeBlockEl(type) {
   const el = document.createElement('div');
   el.className = type;
@@ -1372,7 +1209,6 @@ function makeBlockEl(type) {
   return el;
 }
 
-/** Get the computed pixel size of a block type (uses actual CSS vars) */
 function getBlockSize(type) {
   const style = getComputedStyle(document.documentElement);
   const cubeBase = parseFloat(style.getPropertyValue('--cube-base')) || 14;
@@ -1387,7 +1223,6 @@ function spawnBlocks(type, count, binType, originX, originY) {
               : binType==='tens'  ? document.getElementById('binT')
               :                     document.getElementById('binH');
 
-  // Update logical count
   if (binType==='ones')         binOnes     += count;
   else if (binType==='tens')    binTens     += count;
   else                          binHundreds += count;
@@ -1399,13 +1234,12 @@ function spawnBlocks(type, count, binType, originX, originY) {
   const sz = getBlockSize(type);
   const halfW = sz.w / 2, halfH = sz.h / 2;
 
-  const MAX_VISUAL  = 9;  // 3D blocks are larger — cap lower for legibility
+  const MAX_VISUAL  = 9;  
   const visualCount = Math.min(count, MAX_VISUAL);
   const stagger     = Math.min(80, 500 / visualCount);
 
   for (let i = 0; i < visualCount; i++) {
     setTimeout(() => {
-      // Flying ghost
       const fly = document.createElement('div');
       fly.className = `block-fly ${type}`;
       fly.style.left       = (originX - halfW) + 'px';
@@ -1413,6 +1247,15 @@ function spawnBlocks(type, count, binType, originX, originY) {
       fly.style.width      = sz.w + 'px';
       fly.style.height     = sz.h + 'px';
       fly.style.transition = 'none';
+      
+      if (type === 'ten-bar') {
+        for (let s = 0; s < 10; s++) {
+          const seg = document.createElement('div');
+          seg.className = 'ten-seg';
+          fly.appendChild(seg);
+        }
+      }
+
       document.body.appendChild(fly);
 
       requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -1425,7 +1268,6 @@ function spawnBlocks(type, count, binType, originX, originY) {
 
         setTimeout(() => {
           fly.remove();
-          // Settle block in bin
           const block = makeBlockEl(type);
           block.classList.add('block-settle');
           binEl.appendChild(block);
@@ -1441,16 +1283,11 @@ function spawnBlocks(type, count, binType, originX, originY) {
     }, i * stagger);
   }
 
-  // If count > MAX_VISUAL, schedule one final sync after animation finishes
   if (count > MAX_VISUAL) {
     setTimeout(() => { updateBinCounts(); checkOverflows(); }, MAX_VISUAL * stagger + 480);
   }
 }
 
-// ═══════════════════════════════════════════════════
-// STEP 2 — checkOverflows()
-// Inspects all bins; applies/clears .overflow; locks alg panel
-// ═══════════════════════════════════════════════════
 function checkOverflows() {
   const bins = [
     { el: document.getElementById('binH'), count: binHundreds, type: 'hundreds' },
@@ -1465,15 +1302,10 @@ function checkOverflows() {
     el.classList.toggle('overflow', over);
   });
 
-  // Lock / unlock alg panel
   const overlay = document.getElementById('algLock');
   overlay.classList.toggle('active', anyOverflow);
 }
 
-// ═══════════════════════════════════════════════════
-// STEP 3 — triggerRegroup(binEl, binType)
-// Destroy 10 units, spawn 1 higher-order carry block, animate carry to next bin
-// ═══════════════════════════════════════════════════
 function triggerRegroup(binEl, binType) {
   let toEl, carryClass;
   if (binType === 'ones') {
@@ -1494,7 +1326,6 @@ function triggerRegroup(binEl, binType) {
 
   rebuildBinDOM(binEl, binType);
 
-  // ── Carry animation ──
   const fromRect = binEl.getBoundingClientRect();
   const toRect   = toEl.getBoundingClientRect();
   const sz       = getBlockSize(carryClass);
@@ -1502,6 +1333,21 @@ function triggerRegroup(binEl, binType) {
 
   const carry = document.createElement('div');
   carry.className = `carry-fly ${carryClass}`;
+  
+  if (carryClass === 'ten-bar') {
+    for (let s = 0; s < 10; s++) {
+      const seg = document.createElement('div');
+      seg.className = 'ten-seg';
+      carry.appendChild(seg);
+    }
+  } else if (carryClass === 'hundred-flat') {
+    for (let s = 0; s < 100; s++) {
+      const seg = document.createElement('div');
+      seg.className = 'hund-seg';
+      carry.appendChild(seg);
+    }
+  }
+
   carry.style.width      = sz.w + 'px';
   carry.style.height     = sz.h + 'px';
   carry.style.left       = (fromRect.left + fromRect.width/2  - halfW) + 'px';
@@ -1534,7 +1380,6 @@ function triggerRegroup(binEl, binType) {
   checkOverflows();
 }
 
-// ── Rebuild a bin's block DOM to match logical count ──
 function rebuildBinDOM(binEl, binType) {
   const blockClass = binType==='ones' ? 'cube' : binType==='tens' ? 'ten-bar' : 'hundred-flat';
   const logCount   = binType==='ones' ? binOnes : binType==='tens' ? binTens : binHundreds;
@@ -1560,16 +1405,11 @@ function updateBinCounts() {
   setCount('cntO', binOnes);
 }
 
-// ═══════════════════════════════════════════════════
-// ALGORITHM  — only the top problem statement updates automatically.
-// Partial products and total stay dark until (future phases) manually confirmed.
-// ═══════════════════════════════════════════════════
 const _prev = {};
 
 function updateAlg(A, B) {
   _setFactor(A, 'aA_T','aA_O');
   _setFactor(B, 'aB_T','aB_O');
-  // All partial products / total remain dim — no auto-populate
 }
 
 function _setFactor(f, tId, oId) {
@@ -1597,9 +1437,6 @@ function _popAD(id, val, col) {
   if (s!=='') { el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),400); }
 }
 
-// ═══════════════════════════════════════════════════
-// BANKS
-// ═══════════════════════════════════════════════════
 function buildBanks() {
   const bT = document.getElementById('bankTop');
   const bR = document.getElementById('bankRight');
@@ -1627,22 +1464,14 @@ function makeSrc(kind, axis) {
   return el;
 }
 
-// ═══════════════════════════════════════════════════
-// BIN REGROUP CLICK HANDLERS  (Step 3)
-// ═══════════════════════════════════════════════════
 document.getElementById('binO').addEventListener('click', () => {
   if (binOnes >= 10) triggerRegroup(document.getElementById('binO'), 'ones');
 });
 document.getElementById('binT').addEventListener('click', () => {
   if (binTens >= 10) triggerRegroup(document.getElementById('binT'), 'tens');
 });
-document.getElementById('binH').addEventListener('click', () => {
-  // hundreds can't carry further; nothing to do
-});
+document.getElementById('binH').addEventListener('click', () => {});
 
-// ═══════════════════════════════════════════════════
-// RESET  (double-click canvas)
-// ═══════════════════════════════════════════════════
 document.getElementById('gCanvas').addEventListener('dblclick', e => {
   const tgt = e.target;
   const canvas = document.getElementById('gCanvas');
@@ -1654,7 +1483,6 @@ document.getElementById('gCanvas').addEventListener('dblclick', e => {
     binOnes=0; binTens=0; binHundreds=0;
     Object.keys(_prev).forEach(k=>delete _prev[k]);
     document.querySelectorAll('.squeegee,.sweep-fill,.harvest-fill,.quad-ghost,.block-fly,.carry-fly').forEach(e=>e.remove());
-    // Clear all physical blocks from bins
     ['binO','binT','binH'].forEach(id => {
       document.getElementById(id).querySelectorAll('.cube,.ten-bar,.hundred-flat').forEach(e=>e.remove());
       document.getElementById(id).classList.remove('overflow','accepting');
@@ -1665,9 +1493,6 @@ document.getElementById('gCanvas').addEventListener('dblclick', e => {
   }
 });
 
-// ═══════════════════════════════════════════════════
-// ZOOM
-// ═══════════════════════════════════════════════════
 document.getElementById('zoomSlider').addEventListener('input', e => {
   const z = e.target.value;
   document.documentElement.style.setProperty('--zoom', z);
@@ -1676,9 +1501,6 @@ document.getElementById('zoomSlider').addEventListener('input', e => {
   layout();
 });
 
-// ═══════════════════════════════════════════════════
-// BOOT
-// ═══════════════════════════════════════════════════
 buildBanks();
 triggerAutoZoom();
 layout();
