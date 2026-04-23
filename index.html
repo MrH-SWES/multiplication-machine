@@ -25,9 +25,29 @@
       --tens:     #4169E1;
       --ones:     #DC143C;
 
+      /* Grid geometry */
       --zoom: 1;
       --cell: calc(36px * var(--zoom));
       --rail: calc(18px * var(--zoom));
+
+      /* ── Physical block geometry (Phase 2) ── */
+      /* --slot-w: the column pitch of a single unit slot in the bin area  */
+      /* --cube-base: face size of one cube                                 */
+      /* --depth: the isometric extrusion thickness                         */
+      --slot-w:    calc(18px * var(--block-zoom, 1));
+      --cube-base: calc(14px * var(--block-zoom, 1));
+      --depth:     calc(5px  * var(--block-zoom, 1));
+
+      /* Derived face colours with lighting */
+      --ones-top:   #FF3B5C;
+      --ones-side:  #8B0A1E;
+      --ones-front: #DC143C;
+      --tens-top:   #6682FF;
+      --tens-side:  #1A2E99;
+      --tens-front: #4169E1;
+      --hund-top:   #4CAF50;
+      --hund-side:  #1B5E20;
+      --hund-front: #2E7D32;
     }
 
     *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
@@ -244,22 +264,22 @@
        DASHBOARD FLOOR
     ══════════════════════════════════════ */
     .dashboard-floor {
-      height: 120px;
+      height: 160px;
       flex-shrink: 0;
       background: var(--surface);
       border-top: 1.5px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 16px;
-      padding: 0 24px;
+      gap: 20px;
+      padding: 0 28px;
     }
 
     .bin-group {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
     }
     .bin-label {
       font-size: .58rem;
@@ -269,19 +289,22 @@
       color: var(--text-light);
     }
     .bin {
-      min-width: 96px;
-      max-width: 180px;
-      height: 68px;
-      border-radius: 14px;
-      border: 2px dashed rgba(0,0,0,.12);
+      min-width: 120px;
+      max-width: 260px;
+      height: 100px;
+      border-radius: 16px;
+      border: 2.5px dashed rgba(0,0,0,.12);
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
-      gap: 3px;
-      padding: 6px 8px;
+      gap: 4px;
+      padding: 8px 10px;
       transition: border-color .2s, background .2s, transform .15s var(--spring);
       position: relative;
+      /* perspective set here enables rotateX on child blocks */
+      perspective: 400px;
+      perspective-origin: 50% 20%;
     }
     .bin.hundreds-bin { border-color: rgba(46,125,50,.35); }
     .bin.tens-bin     { border-color: rgba(65,105,225,.35); }
@@ -289,60 +312,191 @@
 
     .bin.accepting {
       border-style: solid;
-      transform: scale(1.04);
+      transform: scale(1.035);
     }
-    .bin.hundreds-bin.accepting { border-color:var(--hundreds); background:rgba(46,125,50,.06); }
-    .bin.tens-bin.accepting     { border-color:var(--tens);     background:rgba(65,105,225,.06); }
-    .bin.ones-bin.accepting     { border-color:var(--ones);     background:rgba(220,20,60,.06); }
+    .bin.hundreds-bin.accepting { border-color:var(--hundreds); background:rgba(46,125,50,.05); }
+    .bin.tens-bin.accepting     { border-color:var(--tens);     background:rgba(65,105,225,.05); }
+    .bin.ones-bin.accepting     { border-color:var(--ones);     background:rgba(220,20,60,.05); }
 
-    /* ── PHYSICAL BLOCKS inside bins ── */
+    /* ══════════════════════════════════════
+       PHYSICAL BLOCKS — 3-D Isometric
+       All sizes driven by --cube-base and --depth
+    ══════════════════════════════════════ */
+
+    /* ── Shared block wrapper ── */
     .cube, .ten-bar, .hundred-flat {
       flex-shrink: 0;
-      border-radius: 3px;
-      box-shadow: inset 1px 1px 0 rgba(255,255,255,.5), inset -1px -1px 0 rgba(0,0,0,.18), 0 2px 4px rgba(0,0,0,.22);
       position: relative;
-    }
-    /* Ones: small red square */
-    .cube {
-      width: 11px;
-      height: 11px;
-      background: var(--ones);
-      border-radius: 2px;
-    }
-    /* Tens: blue horizontal stick */
-    .ten-bar {
-      width: 32px;
-      height: 10px;
-      background: var(--tens);
-      border-radius: 3px;
-    }
-    /* Hundreds: green square flat */
-    .hundred-flat {
-      width: 26px;
-      height: 26px;
-      background: var(--hundreds);
-      border-radius: 3px;
+      display: inline-flex;
+      /* Slight tilt so top face is visible */
+      transform: rotateX(10deg);
+      transform-style: preserve-3d;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,.28));
     }
 
-    /* Flying block — fixed position, animated to bin */
+    /* ─────────────────────────────────────
+       CUBE  (ones unit — red)
+       Isometric box built with ::before (top) and ::after (side)
+    ───────────────────────────────────── */
+    .cube {
+      width:  var(--cube-base);
+      height: var(--cube-base);
+      background: var(--ones-front);
+      border-radius: 2px;
+      /* Right-side extrusion via box-shadow (cheap, no extra elements) */
+      box-shadow:
+        /* right face */
+        calc(var(--depth) * 0.7) calc(var(--depth) * -0.7) 0 0 var(--ones-side),
+        /* top face highlight */
+        0 0 0 1px rgba(255,255,255,.15) inset;
+    }
+    /* Top face */
+    .cube::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--ones-top);
+      border-radius: 2px 2px 0 0;
+      transform: rotateX(-80deg) scaleY(0.45) translateY(-100%);
+      transform-origin: top center;
+    }
+
+    /* ─────────────────────────────────────
+       TEN-BAR  (tens unit — blue)
+       Contains 10 .ten-seg inner divs to show individual units
+    ───────────────────────────────────── */
+    .ten-bar {
+      width:  calc(var(--cube-base) * 10 + var(--depth) * 9 * 0.05);
+      height: var(--cube-base);
+      background: transparent;
+      display: flex;
+      flex-direction: row;
+      gap: 1px;
+      border-radius: 3px;
+      /* overall depth shadow */
+      filter: drop-shadow(calc(var(--depth)*0.5) calc(var(--depth)*-0.5) 0 var(--tens-side))
+              drop-shadow(0 3px 6px rgba(0,0,0,.28));
+    }
+    .ten-seg {
+      flex: 1;
+      height: 100%;
+      background: var(--tens-front);
+      border-radius: 2px;
+      position: relative;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.12) inset;
+    }
+    /* Top face on each segment */
+    .ten-seg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--tens-top);
+      border-radius: 2px 2px 0 0;
+      transform: rotateX(-80deg) scaleY(0.45) translateY(-100%);
+      transform-origin: top center;
+    }
+
+    /* ─────────────────────────────────────
+       HUNDRED-FLAT  (hundreds — green)
+       10×10 grid of segments, forming a flat slab
+    ───────────────────────────────────── */
+    .hundred-flat {
+      width:  calc(var(--cube-base) * 10 + var(--depth) * 0.05);
+      height: calc(var(--cube-base) * 10 + var(--depth) * 0.05);
+      background: transparent;
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-template-rows:    repeat(10, 1fr);
+      gap: 1px;
+      border-radius: 3px;
+      filter: drop-shadow(calc(var(--depth)*0.5) calc(var(--depth)*-0.5) 0 var(--hund-side))
+              drop-shadow(0 4px 10px rgba(0,0,0,.3));
+    }
+    .hund-seg {
+      background: var(--hund-front);
+      border-radius: 1px;
+      position: relative;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.1) inset;
+    }
+    .hund-seg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--hund-top);
+      border-radius: 1px 1px 0 0;
+      transform: rotateX(-80deg) scaleY(0.45) translateY(-100%);
+      transform-origin: top center;
+    }
+
+    /* ── Flying block (fixed, animates to bin) ── */
     .block-fly {
       position: fixed;
       pointer-events: none;
       z-index: 200;
-      border-radius: 3px;
-      box-shadow: inset 1px 1px 0 rgba(255,255,255,.5), inset -1px -1px 0 rgba(0,0,0,.18), 0 3px 8px rgba(0,0,0,.3);
+      transform: rotateX(10deg);
     }
-    .block-fly.cube         { width:11px; height:11px; background:var(--ones); }
-    .block-fly.ten-bar      { width:32px; height:10px; background:var(--tens); }
-    .block-fly.hundred-flat { width:26px; height:26px; background:var(--hundreds); }
+    .block-fly.cube {
+      width: var(--cube-base);
+      height: var(--cube-base);
+      background: var(--ones-front);
+      border-radius: 2px;
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 0 var(--ones-side),
+                  0 4px 10px rgba(0,0,0,.35);
+    }
+    .block-fly.ten-bar {
+      width: calc(var(--cube-base) * 10);
+      height: var(--cube-base);
+      background: var(--tens-front);
+      border-radius: 3px;
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 0 var(--tens-side),
+                  0 4px 10px rgba(0,0,0,.35);
+    }
+    .block-fly.hundred-flat {
+      width: calc(var(--cube-base) * 10);
+      height: calc(var(--cube-base) * 10);
+      background: var(--hund-front);
+      border-radius: 3px;
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 0 var(--hund-side),
+                  0 4px 10px rgba(0,0,0,.35);
+    }
 
-    /* Pop-in animation once settled in bin */
+    /* ── Settle pop-in ── */
     .block-settle {
-      animation: blockSettle .28s var(--spring) both;
+      animation: blockSettle .3s var(--spring) both;
     }
     @keyframes blockSettle {
-      0%   { transform: scale(0.4) translateY(6px); opacity:0; }
-      100% { transform: scale(1)   translateY(0);   opacity:1; }
+      0%   { transform: rotateX(10deg) scale(0.35) translateY(8px); opacity: 0; }
+      100% { transform: rotateX(10deg) scale(1)    translateY(0);   opacity: 1; }
+    }
+
+    /* ── Carry fly (regroup) ── */
+    .carry-fly {
+      position: fixed;
+      pointer-events: none;
+      z-index: 250;
+      transform: rotateX(10deg);
+      border-radius: 3px;
+    }
+    .carry-fly.ten-bar {
+      width: calc(var(--cube-base) * 10);
+      height: var(--cube-base);
+      background: var(--tens-front);
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 0 var(--tens-side),
+                  0 6px 18px rgba(0,0,0,.4);
+    }
+    .carry-fly.hundred-flat {
+      width: calc(var(--cube-base) * 10);
+      height: calc(var(--cube-base) * 10);
+      background: var(--hund-front);
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 0 var(--hund-side),
+                  0 6px 18px rgba(0,0,0,.4);
+    }
+
+    /* ── Bin perspective container (enables rotateX on children) ── */
+    .bin {
+      perspective: 300px;
+      perspective-origin: 50% 0%;
     }
 
     /* ── OVERFLOW STATE ── */
@@ -353,7 +507,7 @@
     }
     @keyframes overflowPulse {
       0%,100% { border-color: #FF9500; box-shadow: 0 0 0 0 rgba(255,149,0,0); }
-      45%     { border-color: #FF3B30; box-shadow: 0 0 0 6px rgba(255,59,48,.22); }
+      45%     { border-color: #FF3B30; box-shadow: 0 0 0 8px rgba(255,59,48,.22); }
     }
     .bin.overflow::after {
       content: 'CLICK TO REGROUP';
@@ -361,7 +515,7 @@
       bottom: -18px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: .44rem;
+      font-size: .43rem;
       font-weight: 800;
       letter-spacing: 1.5px;
       color: #FF3B30;
@@ -371,46 +525,33 @@
 
     /* ── ALG PANEL LOCK OVERLAY ── */
     .alg-panel {
-      position: relative; /* needed for overlay child */
+      position: relative;
     }
     .alg-lock-overlay {
       display: none;
       position: absolute;
       inset: 0;
-      background: rgba(245,245,247,0.72);
-      backdrop-filter: blur(3px);
-      -webkit-backdrop-filter: blur(3px);
+      background: rgba(245,245,247,0.76);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       z-index: 40;
-      border-radius: 0;
       align-items: center;
       justify-content: center;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
     .alg-lock-overlay.active { display: flex; }
-    .alg-lock-icon {
-      font-size: 1.8rem;
-    }
+    .alg-lock-icon { font-size: 2rem; }
     .alg-lock-msg {
-      font-size: .6rem;
+      font-size: .58rem;
       font-weight: 800;
       letter-spacing: 2px;
       text-transform: uppercase;
       color: #FF3B30;
       text-align: center;
       padding: 0 16px;
+      line-height: 1.6;
     }
-
-    /* Carry block animation */
-    .carry-fly {
-      position: fixed;
-      pointer-events: none;
-      z-index: 250;
-      border-radius: 3px;
-      box-shadow: 0 4px 16px rgba(0,0,0,.35);
-    }
-    .carry-fly.ten-bar      { width:32px; height:10px; background:var(--tens); }
-    .carry-fly.hundred-flat { width:26px; height:26px; background:var(--hundreds); }
 
     /* Bin count badge */
     .bin-count {
@@ -707,6 +848,42 @@ let binTens     = 0;
 let binHundreds = 0;
 
 // ═══════════════════════════════════════════════════
+// AUTO-ZOOM  — fits the active grid perfectly in viewport
+// ═══════════════════════════════════════════════════
+function triggerAutoZoom() {
+  const A = factorA(), B = factorB();
+  if (!A.total || !B.total) return;
+
+  // Available canvas area (subtract alg panel, banks, floor, scrollbar margin)
+  const algPanelW   = 200;
+  const bankTopH    = 60;
+  const bankRightW  = 60;
+  const dashFloorH  = 160;
+  const scrollbarM  = 16;
+
+  const availW = window.innerWidth  - algPanelW - bankRightW - scrollbarM - 48;
+  const availH = window.innerHeight - bankTopH  - dashFloorH - scrollbarM - 48;
+
+  // At zoom=1, cell=36px, rail=18px. Canvas width = A.total*36 + rail + GAP + 32
+  const CELL_BASE = 36, RAIL_BASE = 18;
+  const canvasNatW = A.total * CELL_BASE + RAIL_BASE + GAP + 32;
+  const canvasNatH = B.total * CELL_BASE + RAIL_BASE + 32;
+
+  const scaleW = availW / canvasNatW;
+  const scaleH = availH / canvasNatH;
+  const newZoom = Math.min(scaleW, scaleH, 2.0); // cap at 2×
+  const clamped = Math.max(0.35, +newZoom.toFixed(2));
+
+  // Apply to both --zoom (grid) and --block-zoom (blocks)
+  document.documentElement.style.setProperty('--zoom', clamped);
+  document.documentElement.style.setProperty('--block-zoom', Math.min(clamped * 0.85, 1.4));
+
+  // Sync the manual slider too
+  const slider = document.getElementById('zoomSlider');
+  if (slider) slider.value = clamped;
+}
+
+// ═══════════════════════════════════════════════════
 // LAYOUT  — called whenever rails change or zoom changes
 // ═══════════════════════════════════════════════════
 function layout() {
@@ -860,14 +1037,15 @@ function renderRightRail(C, R, B) {
 function addTop(units) {
   if (totalTop() + units > 99) return;
   topSegs.push(units);
-  // reset sweep if rails change
   resetSweep();
+  triggerAutoZoom();
   layout();
 }
 function addRight(units) {
   if (totalRight() + units > 99) return;
   rightSegs.push(units);
   resetSweep();
+  triggerAutoZoom();
   layout();
 }
 function resetSweep() {
@@ -1170,13 +1348,44 @@ function harvestQuadrant(cls, val, A, B, C) {
 }
 
 // ═══════════════════════════════════════════════════
-// STEP 1 — spawnBlocks(type, count, targetBin, originX, originY)
+// STEP 1 — spawnBlocks(type, count, binType, originX, originY)
 // Creates discrete DOM elements and animates them into the bin
 // ═══════════════════════════════════════════════════
+
+/** Build the correct DOM element for a given block type */
+function makeBlockEl(type) {
+  const el = document.createElement('div');
+  el.className = type;
+  if (type === 'ten-bar') {
+    for (let s = 0; s < 10; s++) {
+      const seg = document.createElement('div');
+      seg.className = 'ten-seg';
+      el.appendChild(seg);
+    }
+  } else if (type === 'hundred-flat') {
+    for (let s = 0; s < 100; s++) {
+      const seg = document.createElement('div');
+      seg.className = 'hund-seg';
+      el.appendChild(seg);
+    }
+  }
+  return el;
+}
+
+/** Get the computed pixel size of a block type (uses actual CSS vars) */
+function getBlockSize(type) {
+  const style = getComputedStyle(document.documentElement);
+  const cubeBase = parseFloat(style.getPropertyValue('--cube-base')) || 14;
+  if (type === 'cube')         return { w: cubeBase,      h: cubeBase };
+  if (type === 'ten-bar')      return { w: cubeBase * 10, h: cubeBase };
+  if (type === 'hundred-flat') return { w: cubeBase * 10, h: cubeBase * 10 };
+  return { w: 14, h: 14 };
+}
+
 function spawnBlocks(type, count, binType, originX, originY) {
-  const binEl = binType==='ones'     ? document.getElementById('binO')
-              : binType==='tens'     ? document.getElementById('binT')
-              :                        document.getElementById('binH');
+  const binEl = binType==='ones'  ? document.getElementById('binO')
+              : binType==='tens'  ? document.getElementById('binT')
+              :                     document.getElementById('binH');
 
   // Update logical count
   if (binType==='ones')         binOnes     += count;
@@ -1184,62 +1393,57 @@ function spawnBlocks(type, count, binType, originX, originY) {
   else                          binHundreds += count;
 
   const binRect = binEl.getBoundingClientRect();
-  const destX   = binRect.left + binRect.width/2;
-  const destY   = binRect.top  + binRect.height/2;
+  const destX   = binRect.left + binRect.width  / 2;
+  const destY   = binRect.top  + binRect.height / 2;
 
-  // Stagger each block's launch
-  const MAX_VISUAL = 30; // cap DOM blocks rendered
+  const sz = getBlockSize(type);
+  const halfW = sz.w / 2, halfH = sz.h / 2;
+
+  const MAX_VISUAL  = 9;  // 3D blocks are larger — cap lower for legibility
   const visualCount = Math.min(count, MAX_VISUAL);
+  const stagger     = Math.min(80, 500 / visualCount);
 
   for (let i = 0; i < visualCount; i++) {
-    const delay = i * Math.min(60, 400/visualCount); // tighten stagger for many blocks
-
     setTimeout(() => {
-      // 1. Create flying clone
+      // Flying ghost
       const fly = document.createElement('div');
       fly.className = `block-fly ${type}`;
-      fly.style.left      = (originX - (type==='cube'?5.5:16)) + 'px';
-      fly.style.top       = (originY - (type==='cube'?5.5:5))  + 'px';
-      fly.style.transition= 'none';
+      fly.style.left       = (originX - halfW) + 'px';
+      fly.style.top        = (originY - halfH) + 'px';
+      fly.style.width      = sz.w + 'px';
+      fly.style.height     = sz.h + 'px';
+      fly.style.transition = 'none';
       document.body.appendChild(fly);
 
-      // 2. Animate toward bin center with slight arc
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const dur = 340 + Math.random()*80;
-          const jitterX = (Math.random()-0.5)*30;
-          fly.style.transition = `left ${dur}ms cubic-bezier(0.4,0,1,1), top ${dur}ms cubic-bezier(0.3,0,0.7,1), opacity ${dur}ms`;
-          fly.style.left = (destX + jitterX - (type==='cube'?5.5:16)) + 'px';
-          fly.style.top  = (destY - (type==='cube'?5.5:5)) + 'px';
-          fly.style.opacity = '0.4';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const dur    = 360 + Math.random() * 80;
+        const jitterX = (Math.random() - 0.5) * 24;
+        fly.style.transition = `left ${dur}ms cubic-bezier(0.42,0,1,1), top ${dur}ms cubic-bezier(0.28,0,0.72,1), opacity ${dur}ms`;
+        fly.style.left    = (destX + jitterX - halfW) + 'px';
+        fly.style.top     = (destY - halfH) + 'px';
+        fly.style.opacity = '0.35';
 
-          setTimeout(() => {
-            fly.remove();
-            // 3. Settle: add real block inside bin
-            const block = document.createElement('div');
-            block.className = `${type} block-settle`;
-            block.style.animationDelay = '0ms';
-            binEl.appendChild(block);
-            // Keep count badge above blocks
-            const badge = binEl.querySelector('.bin-count');
-            if (badge) binEl.appendChild(badge);
+        setTimeout(() => {
+          fly.remove();
+          // Settle block in bin
+          const block = makeBlockEl(type);
+          block.classList.add('block-settle');
+          binEl.appendChild(block);
+          const badge = binEl.querySelector('.bin-count');
+          if (badge) binEl.appendChild(badge);
 
-            // Flash bin
-            binEl.classList.add('accepting');
-            setTimeout(()=>binEl.classList.remove('accepting'), 350);
-
-            updateBinCounts();
-            checkOverflows();
-          }, dur);
-        });
-      });
-    }, delay);
+          binEl.classList.add('accepting');
+          setTimeout(() => binEl.classList.remove('accepting'), 360);
+          updateBinCounts();
+          checkOverflows();
+        }, dur);
+      }));
+    }, i * stagger);
   }
 
-  // If count > MAX_VISUAL, schedule a final count update after all land
+  // If count > MAX_VISUAL, schedule one final sync after animation finishes
   if (count > MAX_VISUAL) {
-    const totalDelay = visualCount * Math.min(60, 400/visualCount) + 420;
-    setTimeout(() => { updateBinCounts(); checkOverflows(); }, totalDelay);
+    setTimeout(() => { updateBinCounts(); checkOverflows(); }, MAX_VISUAL * stagger + 480);
   }
 }
 
@@ -1271,66 +1475,60 @@ function checkOverflows() {
 // Destroy 10 units, spawn 1 higher-order carry block, animate carry to next bin
 // ═══════════════════════════════════════════════════
 function triggerRegroup(binEl, binType) {
-  // Determine counts & types
-  let fromCount, toType, toEl, carryClass;
+  let toEl, carryClass;
   if (binType === 'ones') {
     if (binOnes < 10) return;
     binOnes -= 10;
-    fromCount = binOnes;
-    toType    = 'tens';
     toEl      = document.getElementById('binT');
     binTens  += 1;
     carryClass = 'ten-bar';
   } else if (binType === 'tens') {
     if (binTens < 10) return;
     binTens -= 10;
-    fromCount = binTens;
-    toType    = 'hundreds';
     toEl      = document.getElementById('binH');
     binHundreds += 1;
     carryClass  = 'hundred-flat';
   } else {
-    return; // hundreds can't carry further in this context
+    return;
   }
 
-  // ── Rebuild FROM bin's block DOM ──
   rebuildBinDOM(binEl, binType);
 
   // ── Carry animation ──
   const fromRect = binEl.getBoundingClientRect();
   const toRect   = toEl.getBoundingClientRect();
+  const sz       = getBlockSize(carryClass);
+  const halfW    = sz.w / 2, halfH = sz.h / 2;
 
   const carry = document.createElement('div');
   carry.className = `carry-fly ${carryClass}`;
-  carry.style.left = (fromRect.left + fromRect.width/2 - (carryClass==='ten-bar'?16:13)) + 'px';
-  carry.style.top  = (fromRect.top  + fromRect.height/2 - (carryClass==='ten-bar'?5:13)) + 'px';
+  carry.style.width      = sz.w + 'px';
+  carry.style.height     = sz.h + 'px';
+  carry.style.left       = (fromRect.left + fromRect.width/2  - halfW) + 'px';
+  carry.style.top        = (fromRect.top  + fromRect.height/2 - halfH) + 'px';
   carry.style.transition = 'none';
   document.body.appendChild(carry);
 
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      const dur = 380;
-      carry.style.transition = `left ${dur}ms var(--spring), top ${dur}ms var(--spring), opacity ${dur}ms`;
-      carry.style.left = (toRect.left + toRect.width/2  - (carryClass==='ten-bar'?16:13)) + 'px';
-      carry.style.top  = (toRect.top  + toRect.height/2 - (carryClass==='ten-bar'?5:13))  + 'px';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const dur = 420;
+    carry.style.transition = `left ${dur}ms var(--spring), top ${dur}ms var(--spring), opacity ${dur}ms`;
+    carry.style.left = (toRect.left + toRect.width/2  - halfW) + 'px';
+    carry.style.top  = (toRect.top  + toRect.height/2 - halfH) + 'px';
 
-      setTimeout(() => {
-        carry.remove();
-        // Settle the carried block in target bin
-        const block = document.createElement('div');
-        block.className = `${carryClass} block-settle`;
-        toEl.appendChild(block);
-        const badge = toEl.querySelector('.bin-count');
-        if (badge) toEl.appendChild(badge);
+    setTimeout(() => {
+      carry.remove();
+      const block = makeBlockEl(carryClass);
+      block.classList.add('block-settle');
+      toEl.appendChild(block);
+      const badge = toEl.querySelector('.bin-count');
+      if (badge) toEl.appendChild(badge);
 
-        toEl.classList.add('accepting');
-        setTimeout(()=>toEl.classList.remove('accepting'), 350);
-
-        updateBinCounts();
-        checkOverflows();
-      }, dur);
-    });
-  });
+      toEl.classList.add('accepting');
+      setTimeout(() => toEl.classList.remove('accepting'), 360);
+      updateBinCounts();
+      checkOverflows();
+    }, dur);
+  }));
 
   updateBinCounts();
   checkOverflows();
@@ -1341,16 +1539,12 @@ function rebuildBinDOM(binEl, binType) {
   const blockClass = binType==='ones' ? 'cube' : binType==='tens' ? 'ten-bar' : 'hundred-flat';
   const logCount   = binType==='ones' ? binOnes : binType==='tens' ? binTens : binHundreds;
 
-  // Remove existing blocks (not the badge)
   binEl.querySelectorAll('.cube, .ten-bar, .hundred-flat').forEach(e=>e.remove());
 
-  const showCount = Math.min(logCount, 30);
-  for (let i=0; i<showCount; i++) {
-    const block = document.createElement('div');
-    block.className = blockClass;
-    binEl.appendChild(block);
+  const showCount = Math.min(logCount, 9);
+  for (let i = 0; i < showCount; i++) {
+    binEl.appendChild(makeBlockEl(blockClass));
   }
-  // Keep badge on top
   const badge = binEl.querySelector('.bin-count');
   if (badge) binEl.appendChild(badge);
 }
@@ -1475,7 +1669,9 @@ document.getElementById('gCanvas').addEventListener('dblclick', e => {
 // ZOOM
 // ═══════════════════════════════════════════════════
 document.getElementById('zoomSlider').addEventListener('input', e => {
-  document.documentElement.style.setProperty('--zoom', e.target.value);
+  const z = e.target.value;
+  document.documentElement.style.setProperty('--zoom', z);
+  document.documentElement.style.setProperty('--block-zoom', Math.min(z * 0.85, 1.4));
   buildBanks();
   layout();
 });
@@ -1484,6 +1680,7 @@ document.getElementById('zoomSlider').addEventListener('input', e => {
 // BOOT
 // ═══════════════════════════════════════════════════
 buildBanks();
+triggerAutoZoom();
 layout();
 </script>
 </body>
