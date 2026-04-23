@@ -298,7 +298,7 @@
       pointer-events: none;
       border-radius: 3px;
     }
-    .quad-ghost.oo { background: rgba(220,20,60,.07);  color: rgba(220,20,60,.55); }
+    .quad-ghost.oo { background: rgba(220,20,60,.15);  color: rgba(220,20,60,.55); }
     .quad-ghost.to { background: rgba(65,105,225,.07); color: rgba(65,105,225,.55); }
 
     .harvest-fill {
@@ -348,21 +348,20 @@
       color: var(--text-light);
     }
     .bin {
-      min-width: 120px;
-      height: 100px;
-      border-radius: 16px;
+      min-width: auto;
+      width: fit-content;
+      min-height: 120px;
+      border-radius: 8px;
       border: 2.5px dashed rgba(0,0,0,.12);
-      /* Force strict base-10 rows */
       display: grid;
-      grid-template-columns: repeat(10, max-content);
-      gap: 2px;
-      align-content: end;
-      justify-content: center;
-      padding: 8px 10px;
-      transition: border-color .2s, background .2s, transform .15s var(--spring);
+      grid-template-columns: repeat(10, var(--cube-base));
+      grid-auto-rows: var(--cube-base);
+      gap: 1px;
+      align-content: end; /* Gravity: stack from the bottom up */
+      padding: 8px;
+      transition: border-color .2s;
       position: relative;
-      perspective: 400px;
-      perspective-origin: 50% 20%;
+      transform-style: preserve-3d;
     }
     .bin.hundreds-bin { border-color: rgba(46,125,50,.35); }
     .bin.tens-bin     { border-color: rgba(65,105,225,.35); }
@@ -1121,7 +1120,7 @@ function renderSweepFill(C, A, B) {
     return wrapper;
   };
 
-  if (sweepState==='sweeping-oo' || sweepState==='harvested-oo') {
+  if (sweepState==='sweeping-oo') {
     const fillLeft  = sweepX;
     const fillRight = A.total * C;
     const fillW     = fillRight - fillLeft;
@@ -1286,11 +1285,9 @@ function spawnBlocks(type, count, binType, originX, originY) {
   const sz = getBlockSize(type);
   const halfW = sz.w / 2, halfH = sz.h / 2;
 
-  const MAX_VISUAL  = 9;  
-  const visualCount = Math.min(count, MAX_VISUAL);
-  const stagger     = Math.min(80, 500 / visualCount);
+  const stagger     = Math.min(60, 400 / count);
 
-  for (let i = 0; i < visualCount; i++) {
+  for (let i = 0; i < count; i++) {
     setTimeout(() => {
       const fly = document.createElement('div');
       fly.className = `block-fly ${type}`;
@@ -1335,9 +1332,7 @@ function spawnBlocks(type, count, binType, originX, originY) {
     }, i * stagger);
   }
 
-  if (count > MAX_VISUAL) {
-    setTimeout(() => { updateBinCounts(); checkOverflows(); }, MAX_VISUAL * stagger + 480);
-  }
+  setTimeout(() => { updateBinCounts(); checkOverflows(); }, count * stagger + 480);
 }
 
 function checkOverflows() {
@@ -1365,6 +1360,20 @@ function checkOverflows() {
 
   const overlay = document.getElementById('algLock');
   overlay.classList.toggle('active', anyOverflow);
+
+  const sq = document.getElementById('sq-ones');
+  if (sq) {
+    if (anyOverflow) {
+      sq.classList.add('locked');
+      sq.style.pointerEvents = 'none';
+      sq.classList.remove('pulsing');
+    } else if (sweepState === 'harvested-oo') {
+      // Once resolved, unlock it so they can proceed to the tens sweep
+      sq.classList.remove('locked');
+      sq.style.pointerEvents = 'auto';
+      sq.classList.add('pulsing');
+    }
+  }
 }
 
 function triggerRegroup(binEl, binType) {
