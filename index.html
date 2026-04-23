@@ -168,22 +168,69 @@
       flex-shrink: 0;
       transition: transform .15s var(--spring);
     }
-    .src:hover  { transform: translateY(-2px) scale(1.06); }
-    .src:active { transform: scale(.92); cursor: grabbing; }
+    .src:hover  { transform: rotateX(10deg) translateY(-2px) scale(1.06); }
+    .src:active { transform: rotateX(10deg) scale(.92); cursor: grabbing; }
 
-    .src-ten-h { width:calc(var(--cell)*10); height:var(--rail); background:var(--tens); border-radius:4px; }
-    .src-one-h { width:var(--cell);          height:var(--rail); background:var(--ones); border-radius:4px; }
-    .src-ten-v { width:var(--rail); height:calc(var(--cell)*10); background:var(--tens); border-radius:4px; }
-    .src-one-v { width:var(--rail); height:var(--cell);          background:var(--ones); border-radius:4px; }
+    /* Ones source and rail blocks — identical to .cube */
+    .src-one-h, .src-one-v, .rb.ones {
+      width: var(--cube-base); height: var(--cube-base);
+      border-radius: calc(6px * var(--block-zoom));
+      background: var(--ones-front);
+      transform: rotateX(10deg);
+      box-shadow: var(--shadow-block);
+      position: relative;
+      flex-shrink: 0 !important;
+    }
+    .src-one-h::after, .src-one-v::after, .rb.ones::after {
+      content: '1'; position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; color: rgba(255,255,255,0.6);
+      font-size: calc(18px * var(--block-zoom)); pointer-events: none;
+    }
 
-    /* ── PLACED RAIL BLOCKS ── */
-    .rb { flex-shrink:0; border-radius:4px; box-shadow:var(--shadow-block); }
-    .rb.tens { background:var(--tens); }
-    .rb.ones { background:var(--ones); }
-    .rb.h.tens { width: calc(var(--cell) * 10); height: var(--rail); }
-    .rb.h.ones { width: var(--cell); height: var(--rail); }
-    .rb.v.tens { width: var(--rail); height: calc(var(--cell) * 10); }
-    .rb.v.ones { width: var(--rail); height: var(--cell); }
+    /* Tens source (horizontal) and rail h blocks — identical to .ten-bar */
+    .src-ten-h, .rb.h.tens {
+      width: calc((var(--cube-base) + 1px) * 10); height: var(--cube-base);
+      border-radius: calc(6px * var(--block-zoom));
+      background: var(--tens-front);
+      transform: rotateX(10deg);
+      display: flex;
+      box-shadow: var(--shadow-block);
+      position: relative;
+      flex-shrink: 0 !important;
+    }
+    .src-ten-h::after, .rb.h.tens::after {
+      content: '10'; position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; color: rgba(255,255,255,0.6);
+      font-size: calc(14px * var(--block-zoom)); pointer-events: none; z-index: 5;
+    }
+
+    /* Tens source (vertical) and rail v blocks — vertical variant of .ten-bar */
+    .src-ten-v, .rb.v.tens {
+      width: var(--cube-base); height: calc((var(--cube-base) + 1px) * 10);
+      border-radius: calc(6px * var(--block-zoom));
+      background: var(--tens-front);
+      transform: rotateX(10deg);
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-block);
+      position: relative;
+      flex-shrink: 0 !important;
+    }
+    .src-ten-v::after, .rb.v.tens::after {
+      content: '10'; position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; color: rgba(255,255,255,0.6);
+      font-size: calc(14px * var(--block-zoom)); pointer-events: none; z-index: 5;
+    }
+    .src-ten-v .ten-seg, .rb.v.tens .ten-seg {
+      height: auto;
+      width: 100%;
+    }
+
+    /* ── PLACED RAIL BLOCKS (base) ── */
+    .rb { flex-shrink: 0 !important; }
 
     .rail-rest {
       flex:1; min-width:4px; min-height:4px;
@@ -482,21 +529,8 @@
       cursor: pointer;
     }
     @keyframes overflowPulse {
-      0%,100% { border-color: #FF9500; box-shadow: 0 0 0 0 rgba(255,149,0,0); }
-      45%     { border-color: #FF3B30; box-shadow: 0 0 0 8px rgba(255,59,48,.22); }
-    }
-    .bin.overflow::after {
-      content: 'CLICK TO REGROUP';
-      position: absolute;
-      bottom: -18px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: .43rem;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-      color: #FF3B30;
-      white-space: nowrap;
-      pointer-events: none;
+      0%, 100% { border-color: rgba(57, 255, 20, 0.4); box-shadow: 0 0 0 0 rgba(57, 255, 20, 0); }
+      50%      { border-color: rgba(57, 255, 20, 1);   box-shadow: 0 0 15px 4px rgba(57, 255, 20, 0.4); }
     }
 
     /* ── ALG PANEL LOCK OVERLAY ── */
@@ -866,7 +900,13 @@ function renderTopRail(C, R, A) {
   topSegs.forEach(s => {
     const el = document.createElement('div');
     el.className = 'rb h ' + (s===10?'tens':'ones');
-    el.style.borderRadius = '3px';
+    if (s === 10) {
+      for (let i = 0; i < 10; i++) {
+        const seg = document.createElement('div');
+        seg.className = 'ten-seg';
+        el.appendChild(seg);
+      }
+    }
     rail.appendChild(el);
   });
   if (A.total < 99) {
@@ -893,7 +933,13 @@ function renderRightRail(C, R, B) {
   rightSegs.forEach(s => {
     const el = document.createElement('div');
     el.className = 'rb v ' + (s===10?'tens':'ones');
-    el.style.borderRadius = '3px';
+    if (s === 10) {
+      for (let i = 0; i < 10; i++) {
+        const seg = document.createElement('div');
+        seg.className = 'ten-seg';
+        el.appendChild(seg);
+      }
+    }
     rail.appendChild(el);
   });
   if (B.total < 99) {
@@ -1170,7 +1216,6 @@ function harvestQuadrant(cls, val, A, B, C) {
   document.querySelectorAll('.harvest-fill').forEach(e=>e.remove());
 
   const az = document.getElementById('arrayZone');
-  const azRect = az.getBoundingClientRect();
 
   let qx,qy,qw,qh;
   if (cls === 'oo') {
@@ -1181,8 +1226,9 @@ function harvestQuadrant(cls, val, A, B, C) {
     qw = A.tens*C; qh = B.ones*C;
   }
 
-  const originX = azRect.left + qx + qw/2;
-  const originY = azRect.top  + qy + qh/2;
+  const azRect = az.getBoundingClientRect();
+  const originX = azRect.left + qx + (qw / 2);
+  const originY = azRect.top + qy + (qh / 2);
 
   const ghost = document.createElement('div');
   ghost.className = 'quad-ghost ' + cls;
@@ -1195,7 +1241,8 @@ function harvestQuadrant(cls, val, A, B, C) {
   const blockType = (cls === 'oo') ? 'cube' : 'ten-bar';
   const binType   = (cls === 'oo') ? 'ones' : 'tens';
 
-  spawnBlocks(blockType, val, binType, originX, originY);
+  const blockCount = (cls === 'oo') ? (A.O * B.O) : (A.T * B.O);
+  spawnBlocks(blockType, blockCount, binType, originX, originY);
 
   if (cls === 'oo') {
     sweepState = 'harvested-oo';
@@ -1476,6 +1523,13 @@ function makeSrc(kind, axis) {
   el.className = `src src-${kind}-${axis}`;
   el.draggable = true;
   el.title = kind==='ten'?'10':'1';
+  if (kind === 'ten') {
+    for (let i = 0; i < 10; i++) {
+      const seg = document.createElement('div');
+      seg.className = 'ten-seg';
+      el.appendChild(seg);
+    }
+  }
   el.addEventListener('dragstart', e => {
     e.dataTransfer.setData('kind', kind);
     e.dataTransfer.setData('axis', axis);
