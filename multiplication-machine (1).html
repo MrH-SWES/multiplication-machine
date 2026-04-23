@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <title>Multiplication Machine | Math Things.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #F5F5F7;
+      --glass:     rgba(245,245,247,0.92);
+      --surface:   #FFFFFF;
+      --text-main: #1D1D1F;
+      --text-gray: #86868B;
+      --text-light:#AEAEB2;
+      --accent:    #007AFF;
+      --border:    rgba(0,0,0,0.07);
+
+      --shadow-block: inset 2px 2px 0 rgba(255,255,255,0.45),
+                      inset -2px -2px 0 rgba(0,0,0,0.13),
+                      0 4px 12px rgba(0,0,0,0.18);
+      --spring: cubic-bezier(0.34,1.56,0.64,1);
+
+      --hundreds: #2E7D32;
+      --tens:     #4169E1;
+      --ones:     #DC143C;
+
+      /* Zoom-driven cell size */
+      --zoom: 1;
+      --cell: calc(36px * var(--zoom));
+      --rail: calc(18px * var(--zoom));
+    }
+
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+    body {
+      font-family:'Lexend',sans-serif;
+      background:var(--bg);
+      color:var(--text-main);
+      height:100dvh;
+      display:flex;
+      overflow:hidden;
+      user-select:none;
+      -webkit-user-select:none;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* ══════════════════════════════════════
+       CANVAS SIDE  (left, flex:1)
+    ══════════════════════════════════════ */
+    .canvas-side {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+      position: relative;
+    }
+
+    /* ── BANK STRIP (top) — drag sources ── */
+    .bank-top {
+      height: 64px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      background: var(--surface);
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    /* ── GRID ROW ── */
+    .grid-row {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ── BANK STRIP (right) — vertical drag sources ── */
+    .bank-right {
+      width: 64px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      background: var(--surface);
+      border-left: 1.5px solid var(--border);
+    }
+
+    /* ── SCROLLABLE GRID ── */
+    .grid-scroller {
+      flex: 1;
+      overflow: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,0,0,.12) transparent;
+      background: var(--bg);
+      position: relative;
+    }
+    .grid-scroller::-webkit-scrollbar { width:6px; height:6px; }
+    .grid-scroller::-webkit-scrollbar-thumb { background:rgba(0,0,0,.12); border-radius:3px; }
+
+    /* Canvas — sized by JS */
+    #gCanvas {
+      position: relative;
+      /* Extra padding so blocks don't clip */
+      padding: 0;
+    }
+
+    /* ── RAIL STRIPS (inside canvas, positioned by JS) ── */
+    #topRail {
+      position: absolute;
+      display: flex;
+      align-items: flex-end;   /* blocks sit at bottom of rail strip */
+      /* top, left, height set by JS */
+    }
+    #rightRail {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      /* top, right/left, width set by JS */
+    }
+
+    /* ── ARRAY ZONE ── */
+    #arrayZone {
+      position: absolute;
+      /* all four sides set by JS */
+    }
+    #gridSVG {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    /* ── SOURCE BLOCKS (bank) ── */
+    .src {
+      cursor: grab;
+      border-radius: 5px;
+      box-shadow: var(--shadow-block);
+      flex-shrink: 0;
+      transition: transform .15s var(--spring);
+      position: relative;
+    }
+    .src:hover  { transform: translateY(-2px) scale(1.06); }
+    .src:active { transform: scale(.92); cursor: grabbing; }
+
+    /* horizontal (top bank) */
+    .src-ten-h {
+      /* exactly 10 cells wide, rail tall */
+      width:  calc(var(--cell) * 10);
+      height: var(--rail);
+      background: var(--tens);
+      border-radius: 4px;
+    }
+    .src-one-h {
+      width:  var(--cell);
+      height: var(--rail);
+      background: var(--ones);
+      border-radius: 4px;
+    }
+    /* vertical (right bank) */
+    .src-ten-v {
+      width:  var(--rail);
+      height: calc(var(--cell) * 10);
+      background: var(--tens);
+      border-radius: 4px;
+    }
+    .src-one-v {
+      width:  var(--rail);
+      height: var(--cell);
+      background: var(--ones);
+      border-radius: 4px;
+    }
+
+    /* ── PLACED RAIL BLOCKS ── */
+    .rb {
+      flex-shrink: 0;
+      border-radius: 4px;
+      box-shadow: var(--shadow-block);
+    }
+    .rb.tens { background: var(--tens); }
+    .rb.ones { background: var(--ones); }
+
+    /* Drop remainder */
+    .rail-rest {
+      flex: 1;
+      min-width: 4px;
+      min-height: 4px;
+      border: 2px dashed rgba(0,0,0,.1);
+      border-radius: 5px;
+      transition: border-color .15s, background .15s;
+    }
+    .rail-rest.over { border-color:var(--accent); background:rgba(0,122,255,.05); }
+
+    /* ── ARRAY FILLS ── */
+    .qfill {
+      position: absolute;
+      pointer-events: none;
+      border-radius: 2px;
+    }
+    /* 
+      Orientation: top rail = tens LEFT, ones RIGHT
+                   right rail = tens TOP, ones BOTTOM
+      So in the array:
+        top-left     = tens×tens  (green)
+        top-right    = ones×tens  (blue)   [A_O cols × B_T rows]
+        bottom-left  = tens×ones  (blue)   [A_T cols × B_O rows]
+        bottom-right = ones×ones  (red)
+    */
+    .qfill.tt { background: rgba(46,125,50,.16); }
+    .qfill.ot { background: rgba(65,105,225,.16); }
+    .qfill.to { background: rgba(65,105,225,.16); }
+    .qfill.oo { background: rgba(220,20,60,.16); }
+
+    /* Quadrant labels */
+    .qlabel {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .4s;
+    }
+    .qlabel.show { opacity: 1; }
+    .qlabel.tt { color: rgba(46,125,50,.6); }
+    .qlabel.ot,.qlabel.to { color: rgba(65,105,225,.6); }
+    .qlabel.oo { color: rgba(220,20,60,.6); }
+
+    /* ══════════════════════════════════════
+       ALGORITHM PANEL  (right)
+    ══════════════════════════════════════ */
+    .alg-panel {
+      width: 200px;
+      flex-shrink: 0;
+      background: var(--glass);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-left: 1.5px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      padding: 32px 20px 24px;
+      gap: 0;
+      overflow-y: auto;
+    }
+
+    /* Written problem */
+    .alg-problem {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 1px;
+      margin-bottom: 4px;
+    }
+    .alg-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0;
+    }
+    .alg-sym {
+      font-size: 1.9rem;
+      font-weight: 900;
+      color: var(--text-light);
+      line-height: 42px;
+      margin-right: 2px;
+    }
+
+    /* Individual digit cell */
+    .ad {
+      width: 30px;
+      height: 42px;
+      text-align: center;
+      line-height: 42px;
+      font-size: 2.3rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      border-radius: 8px;
+      transition: color .25s;
+    }
+    .ad.t   { color: var(--tens); }
+    .ad.o   { color: var(--ones); }
+    .ad.dim { color: var(--text-light); }
+    .ad.pop { animation: dPop .35s var(--spring) both; }
+
+    @keyframes dPop {
+      0%   { transform: scale(.5) translateY(8px); opacity: 0; }
+      100% { transform: scale(1)  translateY(0);   opacity: 1; }
+    }
+
+    .alg-line {
+      height: 2.5px;
+      background: var(--text-main);
+      width: 100%;
+      border-radius: 2px;
+      margin: 5px 0 4px;
+    }
+
+    /* Partial product rows */
+    .pp-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      margin-bottom: 4px;
+    }
+    .pp-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 0;
+      opacity: .12;
+      transition: opacity .4s;
+    }
+    .pp-row.lit { opacity: 1; }
+
+    .pd {
+      width: 30px;
+      height: 42px;
+      text-align: center;
+      line-height: 42px;
+      font-size: 2.3rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--text-main);
+      border-radius: 8px;
+    }
+    .pd.zero { color: var(--text-light); }
+    .pd.pop  { animation: dPop .35s var(--spring) both; }
+
+    .sum-line {
+      height: 2.5px;
+      background: var(--text-main);
+      width: 100%;
+      border-radius: 2px;
+      margin: 4px 0;
+      opacity: .12;
+      transition: opacity .4s;
+    }
+    .sum-line.lit { opacity: 1; }
+
+    .total-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 0;
+      opacity: .12;
+      transition: opacity .4s;
+      margin-bottom: 20px;
+    }
+    .total-row.lit { opacity: 1; }
+
+    .td {
+      width: 30px;
+      height: 50px;
+      text-align: center;
+      line-height: 50px;
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      color: var(--text-main);
+      border-radius: 8px;
+    }
+    .td.pop { animation: dPop .5s var(--spring) both; }
+
+    /* Distributive breakdown grid */
+    .dist-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      opacity: 0;
+      transition: opacity .5s;
+    }
+    .dist-grid.show { opacity: 1; }
+
+    .dc {
+      border-radius: 10px;
+      padding: 7px 5px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .dc.tt { background: rgba(46,125,50,.1); }
+    .dc.ot,.dc.to { background: rgba(65,105,225,.1); }
+    .dc.oo { background: rgba(220,20,60,.1); }
+
+    .dc-val {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+    .dc.tt .dc-val { color: var(--hundreds); }
+    .dc.ot .dc-val,.dc.to .dc-val { color: var(--tens); }
+    .dc.oo .dc-val { color: var(--ones); }
+    .dc-eq { font-size: .58rem; font-weight: 600; color: var(--text-gray); }
+
+    /* Logo watermark bottom-left of canvas */
+    .watermark {
+      position: fixed;
+      bottom: 12px;
+      left: 16px;
+      font-weight: 900;
+      font-size: .85rem;
+      letter-spacing: -0.05em;
+      color: var(--text-light);
+      pointer-events: none;
+      z-index: 10;
+      display: flex;
+      align-items: baseline;
+      gap: 0;
+    }
+    .wbead {
+      width: .2em; height: .2em; border-radius: 50%; display: inline-block;
+      margin-left: .04em; margin-bottom: .07em;
+      background: linear-gradient(135deg,#e0e0e0,#a0a0a0,#d0d0d0);
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+
+    /* Zoom pill — minimal, sits in bottom-right of canvas area */
+    .zoom-pill {
+      position: fixed;
+      bottom: 12px;
+      right: 216px; /* clear of alg panel */
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 5px 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.07);
+      z-index: 50;
+    }
+    .zoom-pill svg { color: var(--text-light); }
+    .zoom-slider { width: 72px; cursor: pointer; accent-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<!-- Canvas side -->
+<div class="canvas-side">
+
+  <!-- Top bank: horizontal sources -->
+  <div class="bank-top" id="bankTop"></div>
+
+  <div class="grid-row">
+    <div class="grid-scroller" id="gridScroller">
+      <div id="gCanvas">
+        <div id="topRail"></div>
+        <div id="rightRail"></div>
+        <div id="arrayZone">
+          <svg id="gridSVG"></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right bank: vertical sources -->
+    <div class="bank-right" id="bankRight"></div>
+  </div>
+
+</div>
+
+<!-- Algorithm panel -->
+<div class="alg-panel">
+
+  <div class="alg-problem">
+    <div class="alg-row">
+      <div class="ad t" id="aA_T"></div>
+      <div class="ad o" id="aA_O"></div>
+    </div>
+    <div class="alg-row">
+      <span class="alg-sym">×</span>
+      <div class="ad t" id="aB_T"></div>
+      <div class="ad o" id="aB_O"></div>
+    </div>
+    <div class="alg-line"></div>
+  </div>
+
+  <div class="pp-section">
+    <div class="pp-row" id="pp1">
+      <div class="pd" id="p1_TH"></div>
+      <div class="pd" id="p1_H"></div>
+      <div class="pd" id="p1_T"></div>
+      <div class="pd" id="p1_O"></div>
+    </div>
+    <div class="pp-row" id="pp2">
+      <div class="pd" id="p2_TH"></div>
+      <div class="pd" id="p2_H"></div>
+      <div class="pd" id="p2_T"></div>
+      <div class="pd zero" id="p2_0"></div>
+    </div>
+  </div>
+
+  <div class="sum-line" id="sumLine"></div>
+
+  <div class="total-row" id="totalRow">
+    <div class="td" id="t_TH"></div>
+    <div class="td" id="t_H"></div>
+    <div class="td" id="t_T"></div>
+    <div class="td" id="t_O"></div>
+  </div>
+
+  <div class="dist-grid" id="distGrid">
+    <!-- top-left: tens×tens -->
+    <div class="dc tt"><div class="dc-val" id="dm_tt"></div><div class="dc-eq" id="dm_tt_eq"></div></div>
+    <!-- top-right: ones×tens -->
+    <div class="dc ot"><div class="dc-val" id="dm_ot"></div><div class="dc-eq" id="dm_ot_eq"></div></div>
+    <!-- bottom-left: tens×ones -->
+    <div class="dc to"><div class="dc-val" id="dm_to"></div><div class="dc-eq" id="dm_to_eq"></div></div>
+    <!-- bottom-right: ones×ones -->
+    <div class="dc oo"><div class="dc-val" id="dm_oo"></div><div class="dc-eq" id="dm_oo_eq"></div></div>
+  </div>
+
+</div>
+
+<!-- Logo watermark -->
+<div class="watermark">Math Things<span class="wbead"></span></div>
+
+<!-- Zoom -->
+<div class="zoom-pill">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+  <input type="range" id="zoomSlider" class="zoom-slider" min="0.35" max="2" step="0.05" value="1">
+</div>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════
+// STATE
+// Everything is derived from what's on the rails.
+// Top rail  → horizontal axis = first factor  (A)
+// Right rail → vertical axis  = second factor (B)
+//
+// ORIENTATION (matching standard algorithm):
+//   Top rail: tens blocks placed LEFT-TO-RIGHT, so tens are on the LEFT, ones on the RIGHT.
+//   Right rail: tens blocks placed TOP-TO-BOTTOM, so tens are on the TOP, ones on the BOTTOM.
+//
+//   In the array grid (origin = top-left corner of array zone):
+//     col 0        … col A_T*10-1  → tens columns  (left region)
+//     col A_T*10   … col A-1       → ones columns  (right region)
+//     row 0        … row B_T*10-1  → tens rows     (top region)
+//     row B_T*10   … row B-1       → ones rows     (bottom region)
+//
+//   So the four quadrants:
+//     top-left     = tens-cols × tens-rows  = A_T*10 × B_T*10  (green, hundreds)
+//     top-right    = ones-cols × tens-rows  = A_O    × B_T*10  (blue)
+//     bottom-left  = tens-cols × ones-rows  = A_T*10 × B_O     (blue)
+//     bottom-right = ones-cols × ones-rows  = A_O    × B_O     (red, ones×ones)
+// ═══════════════════════════════════════════════════
+
+// Rail contents: array of segment sizes (10 or 1), in placement order
+let topSegs  = [];   // horizontal (left→right): tens first, then ones
+let rightSegs = [];  // vertical   (top→bottom): tens first, then ones
+
+// Totals
+function topUnits()   { return topSegs.reduce((s,x)=>s+x,0); }
+function rightUnits() { return rightSegs.reduce((s,x)=>s+x,0); }
+
+// Derived factor decomposition from rail contents
+function factorA() {
+  const u = topUnits();
+  return { total: u, tens: Math.floor(u/10)*10, ones: u%10, T: Math.floor(u/10), O: u%10 };
+}
+function factorB() {
+  const u = rightUnits();
+  return { total: u, tens: Math.floor(u/10)*10, ones: u%10, T: Math.floor(u/10), O: u%10 };
+}
+
+// ═══════════════════════════════════════════════════
+// GEOMETRY
+// ═══════════════════════════════════════════════════
+function cp() {
+  return 36 * parseFloat(document.documentElement.style.getPropertyValue('--zoom') || 1);
+}
+function rp() { return cp() * 0.5; }  // rail thickness
+
+// The layout is:
+//   canvas origin = (0,0)
+//   topRail:   left=0,           top=0,     height=rp, width=A*cp
+//   arrayZone: left=0,           top=rp,    width=A*cp, height=B*cp
+//   rightRail: left=A*cp+gap,    top=rp,    width=rp,  height=B*cp
+//   (right rail is to the RIGHT of the array, not overlapping it)
+//
+// Top rail orientation: tens go on LEFT, ones on RIGHT
+//   → the leftmost blocks are tens, rightmost are ones
+//   → when the student builds "32": 3 ten-sticks fill cols 0-29, then 2 one-cubes fill cols 30-31
+//
+// Right rail orientation: tens go on TOP, ones on BOTTOM
+//   → topmost blocks are tens, bottommost are ones
+//   → when the student builds "24": 2 ten-sticks fill rows 0-19, then 4 one-cubes fill rows 20-23
+
+const GAP = 8; // px between array and right rail
+
+function layout() {
+  const C = cp(), R = rp();
+  const A = factorA(), B = factorB();
+  const W = A.total * C;
+  const H = B.total * C;
+
+  const canvasW = W + GAP + R + 40;
+  const canvasH = R + H + 40;
+
+  const canvas = document.getElementById('gCanvas');
+  canvas.style.width  = canvasW + 'px';
+  canvas.style.height = canvasH + 'px';
+
+  // Top rail: sits above the array, same x-position
+  const topRail = document.getElementById('topRail');
+  topRail.style.left   = '0';
+  topRail.style.top    = '0';
+  topRail.style.height = R + 'px';
+  topRail.style.width  = (W || C * 2) + 'px'; // at least a little wide
+
+  // Array zone
+  const az = document.getElementById('arrayZone');
+  az.style.left   = '0';
+  az.style.top    = R + 'px';
+  az.style.width  = W + 'px';
+  az.style.height = H + 'px';
+
+  const svg = document.getElementById('gridSVG');
+  svg.style.width  = W + 'px';
+  svg.style.height = H + 'px';
+  svg.setAttribute('width',  W || 0);
+  svg.setAttribute('height', H || 0);
+
+  // Right rail: to the right of the array
+  const rightRail = document.getElementById('rightRail');
+  rightRail.style.left   = (W + GAP) + 'px';
+  rightRail.style.top    = R + 'px';
+  rightRail.style.width  = R + 'px';
+  rightRail.style.height = (H || C * 2) + 'px';
+
+  drawGrid(C, A, B);
+  renderTopRail(C, R, A);
+  renderRightRail(C, R, B);
+  renderArray(C, A, B);
+  updateAlg(A, B);
+}
+
+// ═══════════════════════════════════════════════════
+// GRID LINES
+// ═══════════════════════════════════════════════════
+function drawGrid(C, A, B) {
+  const svg = document.getElementById('gridSVG');
+  svg.innerHTML = '';
+  if (A.total === 0 || B.total === 0) return;
+  const W = A.total * C, H = B.total * C;
+
+  const ln = (x1,y1,x2,y2,col,w,dash='') => {
+    const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1',x1); l.setAttribute('y1',y1);
+    l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+    l.setAttribute('stroke',col); l.setAttribute('stroke-width',w);
+    if (dash) l.setAttribute('stroke-dasharray',dash);
+    svg.appendChild(l);
+  };
+
+  // The tens/ones boundary column: x = A.tens (from the left, since tens are leftmost)
+  // The tens/ones boundary row:    y = B.tens (from the top,  since tens are topmost)
+  const xDiv = A.tens * C;   // vertical divider between tens and ones columns
+  const yDiv = B.tens * C;   // horizontal divider between tens and ones rows
+
+  // Minor cell lines
+  for (let x = 0; x <= A.total; x++) {
+    const isMajor = (x === 0 || x === A.total || (A.ones > 0 && x === A.tens));
+    ln(x*C,0,x*C,H, isMajor?'rgba(0,0,0,.22)':'rgba(0,0,0,.07)', isMajor?1.5:0.5);
+  }
+  for (let y = 0; y <= B.total; y++) {
+    const isMajor = (y === 0 || y === B.total || (B.ones > 0 && y === B.tens));
+    ln(0,y*C,W,y*C, isMajor?'rgba(0,0,0,.22)':'rgba(0,0,0,.07)', isMajor?1.5:0.5);
+  }
+
+  // Dashed quadrant dividers
+  if (A.T > 0 && A.O > 0) ln(xDiv,0,xDiv,H,'rgba(0,0,0,.32)',2,'7 4');
+  if (B.T > 0 && B.O > 0) ln(0,yDiv,W,yDiv,'rgba(0,0,0,.32)',2,'7 4');
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER RAILS
+// Top rail: segments placed left→right. Tens blocks first (user drags tens-then-ones).
+// Right rail: segments placed top→bottom. Tens blocks first.
+// ═══════════════════════════════════════════════════
+function dropHandler(axis) {
+  return {
+    over:  e => { e.preventDefault(); e.currentTarget.classList.add('over'); },
+    leave: e => { e.currentTarget.classList.remove('over'); },
+    drop:  e => {
+      e.preventDefault();
+      e.currentTarget.classList.remove('over');
+      const kind = e.dataTransfer.getData('kind');
+      const ax   = e.dataTransfer.getData('axis');
+      if (ax !== axis) return;
+      if (axis === 'h') addTop(kind === 'ten' ? 10 : 1);
+      else              addRight(kind === 'ten' ? 10 : 1);
+    }
+  };
+}
+
+function renderTopRail(C, R, A) {
+  const rail = document.getElementById('topRail');
+  rail.innerHTML = '';
+  rail.style.height = R + 'px';
+
+  topSegs.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'rb ' + (s === 10 ? 'tens' : 'ones');
+    el.style.height = R + 'px';
+    el.style.width  = (s === 10 ? C * 10 : C) + 'px';
+    el.style.borderRadius = '3px';
+    rail.appendChild(el);
+  });
+
+  if (topSegs.length === 0 || A.total < 99) {
+    const dz = document.createElement('div');
+    dz.className = 'rail-rest';
+    dz.style.height = R + 'px';
+    const dh = dropHandler('h');
+    dz.addEventListener('dragover', dh.over);
+    dz.addEventListener('dragleave', dh.leave);
+    dz.addEventListener('drop', dh.drop);
+    rail.appendChild(dz);
+  }
+}
+
+function renderRightRail(C, R, B) {
+  const rail = document.getElementById('rightRail');
+  rail.innerHTML = '';
+  rail.style.width = R + 'px';
+
+  rightSegs.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'rb ' + (s === 10 ? 'tens' : 'ones');
+    el.style.width  = R + 'px';
+    el.style.height = (s === 10 ? C * 10 : C) + 'px';
+    el.style.borderRadius = '3px';
+    rail.appendChild(el);
+  });
+
+  if (rightSegs.length === 0 || B.total < 99) {
+    const dz = document.createElement('div');
+    dz.className = 'rail-rest';
+    dz.style.width = R + 'px';
+    const dh = dropHandler('v');
+    dz.addEventListener('dragover', dh.over);
+    dz.addEventListener('dragleave', dh.leave);
+    dz.addEventListener('drop', dh.drop);
+    rail.appendChild(dz);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// ARRAY  — quadrant fills matching rail orientation
+// ═══════════════════════════════════════════════════
+function renderArray(C, A, B) {
+  const az = document.getElementById('arrayZone');
+  az.querySelectorAll('.qfill,.qlabel').forEach(e => e.remove());
+  if (A.total === 0 || B.total === 0) return;
+
+  // How many tens/ones columns and rows are currently placed
+  // Columns: left side = tens, right side = ones
+  const colT = Math.min(topUnits(), A.tens);       // tens columns filled (left region)
+  const colO = Math.max(0, topUnits() - A.tens);   // ones columns filled (right region)
+
+  // Rows: top side = tens, bottom side = ones
+  const rowT = Math.min(rightUnits(), B.tens);      // tens rows filled (top region)
+  const rowO = Math.max(0, rightUnits() - B.tens);  // ones rows filled (bottom region)
+
+  // X positions (from left): tens zone starts at 0, ones zone starts at A.tens
+  // Y positions (from top):  tens zone starts at 0, ones zone starts at B.tens
+
+  const quads = [
+    // id,   x,        y,        w,     h
+    ['tt',   0,        0,        colT,  rowT ],   // top-left:     tens×tens
+    ['ot',   A.tens,   0,        colO,  rowT ],   // top-right:    ones-cols × tens-rows
+    ['to',   0,        B.tens,   colT,  rowO ],   // bottom-left:  tens-cols × ones-rows
+    ['oo',   A.tens,   B.tens,   colO,  rowO ],   // bottom-right: ones×ones
+  ];
+
+  quads.forEach(([id, x, y, w, h]) => {
+    if (w <= 0 || h <= 0) return;
+
+    const fill = document.createElement('div');
+    fill.className = 'qfill ' + id;
+    fill.style.left   = (x * C) + 'px';
+    fill.style.top    = (y * C) + 'px';
+    fill.style.width  = (w * C) + 'px';
+    fill.style.height = (h * C) + 'px';
+    az.appendChild(fill);
+
+    // Full-size label: only when this quadrant is completely filled
+    const fullW = id.startsWith('t') ? A.tens : A.ones;
+    const fullH = id.endsWith('t')   ? B.tens : B.ones;
+    if (fullW > 0 && fullH > 0 && w >= fullW && h >= fullH) {
+      const lbl = document.createElement('div');
+      lbl.className = 'qlabel show ' + id;
+      lbl.style.left      = (x * C) + 'px';
+      lbl.style.top       = (y * C) + 'px';
+      lbl.style.width     = (fullW * C) + 'px';
+      lbl.style.height    = (fullH * C) + 'px';
+      lbl.style.fontSize  = Math.min(C * 0.9, 52) + 'px';
+      lbl.textContent     = fullW * fullH;
+      az.appendChild(lbl);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// ALGORITHM PANEL  — driven purely by rail state
+// ═══════════════════════════════════════════════════
+const _prev = {};
+
+function updateAlg(A, B) {
+  const tU = A.total, rU = B.total;
+
+  // Show digits as they build up; dim if rail not yet complete
+  // "Complete" means adding one more block would exceed a natural boundary,
+  // but we just show whatever is placed.
+  setAD('aA_T', A.T  || '', 'T');
+  setAD('aA_O', A.O  || A.total > 0 ? (A.O > 0 ? A.O : (A.T > 0 ? '' : A.total)) : '', 'O');
+  setAD('aB_T', B.T  || '', 'T');
+  setAD('aB_O', B.O  || B.total > 0 ? (B.O > 0 ? B.O : (B.T > 0 ? '' : B.total)) : '', 'O');
+
+  // Smarter: just set from the numbers directly
+  _setFactor(A, 'aA_T','aA_O');
+  _setFactor(B, 'aB_T','aB_O');
+
+  const both = (tU > 0 && rU > 0);
+
+  // Partial product 1: B.ones × A.total  (bottom row of B × full width of A)
+  const pp1val = both ? B.O * A.total : null;
+  // Partial product 2: B.tens × A.total  (top rows of B × full width of A)
+  const pp2val = both ? B.tens * A.total : null;
+  const tot    = both ? A.total * B.total : null;
+
+  const hasPP1 = both && B.O > 0;
+  const hasPP2 = both && B.T > 0;
+  const hasTot = both;
+
+  // PP row 1
+  document.getElementById('pp1').classList.toggle('lit', hasPP1);
+  if (hasPP1 && pp1val !== null) {
+    const d = splitDigits(pp1val, 4);
+    popD('p1_TH',d[0]); popD('p1_H',d[1]); popD('p1_T',d[2]); popD('p1_O',d[3]);
+  } else {
+    ['p1_TH','p1_H','p1_T','p1_O'].forEach(id => popD(id,''));
+  }
+
+  // PP row 2
+  document.getElementById('pp2').classList.toggle('lit', hasPP2);
+  document.getElementById('p2_0').textContent = hasPP2 ? '0' : '';
+  if (hasPP2 && pp2val !== null) {
+    const base = pp2val / 10;
+    const d = splitDigits(base, 3);
+    popD('p2_TH',d[0]); popD('p2_H',d[1]); popD('p2_T',d[2]);
+  } else {
+    ['p2_TH','p2_H','p2_T'].forEach(id => popD(id,''));
+  }
+
+  // If only one of the partial products exists (e.g. B is a single digit), collapse pp2
+  if (!hasPP2) {
+    ['p2_TH','p2_H','p2_T','p2_0'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '';
+    });
+  }
+
+  document.getElementById('sumLine').classList.toggle('lit', hasTot);
+  document.getElementById('totalRow').classList.toggle('lit', hasTot);
+
+  if (hasTot && tot !== null) {
+    const d = splitDigits(tot, 4);
+    popD('t_TH',d[0]); popD('t_H',d[1]); popD('t_T',d[2]); popD('t_O',d[3]);
+  } else {
+    ['t_TH','t_H','t_T','t_O'].forEach(id => popD(id,''));
+  }
+
+  // Distributive map
+  const dg = document.getElementById('distGrid');
+  dg.classList.toggle('show', both);
+  if (both) {
+    const tt = A.tens * B.tens;
+    const ot = A.ones * B.tens;
+    const to = A.tens * B.ones;
+    const oo = A.ones * B.ones;
+    setDC('tt', tt, tt ? `${A.tens}×${B.tens}` : '');
+    setDC('ot', ot, ot ? `${A.ones}×${B.tens}` : '');
+    setDC('to', to, to ? `${A.tens}×${B.ones}` : '');
+    setDC('oo', oo, oo ? `${A.ones}×${B.ones}` : '');
+  }
+}
+
+function _setFactor(f, tidEl, oidEl) {
+  const tel = document.getElementById(tidEl);
+  const oel = document.getElementById(oidEl);
+  if (!tel || !oel) return;
+
+  if (f.total === 0) {
+    tel.textContent = '';
+    oel.textContent = '';
+    return;
+  }
+
+  if (f.T > 0) {
+    // Has tens: show both digits
+    popAD(tidEl, f.T, 't');
+    popAD(oidEl, f.O > 0 ? f.O : 0, 'o');
+  } else {
+    // Only ones
+    tel.textContent = '';
+    popAD(oidEl, f.O, 'o');
+  }
+}
+
+function popAD(id, val, col) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const s = val === '' || val === null ? '' : String(val);
+  if (_prev[id] === s) return;
+  _prev[id] = s;
+  el.textContent = s;
+  el.className = 'ad ' + col;
+  if (s !== '') {
+    el.classList.add('pop');
+    setTimeout(() => el.classList.remove('pop'), 400);
+  }
+}
+
+function setAD(id, val, col) { /* unused, kept for compat */ }
+
+function popD(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const s = val === null ? '' : String(val);
+  if (_prev[id] === s) return;
+  _prev[id] = s;
+  el.textContent = s;
+  if (s !== '') {
+    el.classList.remove('pop');
+    void el.offsetWidth;
+    el.classList.add('pop');
+    setTimeout(() => el.classList.remove('pop'), 400);
+  }
+}
+
+function setDC(id, val, eq) {
+  const v = document.getElementById('dm_'+id);
+  const e = document.getElementById('dm_'+id+'_eq');
+  if (v) v.textContent = val || '';
+  if (e) e.textContent = eq  || '';
+}
+
+// Split a number into an array of `len` digit characters, leading blanks for zeros
+function splitDigits(n, len) {
+  const s = String(Math.round(Math.abs(n))).padStart(len, '0');
+  let sig = false;
+  return s.split('').map(c => {
+    if (c !== '0') sig = true;
+    return sig ? c : '';
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// ADD BLOCKS
+// ═══════════════════════════════════════════════════
+function addTop(units) {
+  const u = topUnits();
+  if (u + units > 99) return;
+  topSegs.push(units);
+  layout();
+}
+
+function addRight(units) {
+  const u = rightUnits();
+  if (u + units > 99) return;
+  rightSegs.push(units);
+  layout();
+}
+
+// ═══════════════════════════════════════════════════
+// BANKS
+// ═══════════════════════════════════════════════════
+function buildBanks() {
+  const bT = document.getElementById('bankTop');
+  const bR = document.getElementById('bankRight');
+  bT.innerHTML = '';
+  bR.innerHTML = '';
+
+  bT.appendChild(makeSrc('ten','h'));
+  bT.appendChild(makeSrc('one','h'));
+  bR.appendChild(makeSrc('ten','v'));
+  bR.appendChild(makeSrc('one','v'));
+}
+
+function makeSrc(kind, axis) {
+  const el = document.createElement('div');
+  el.className = `src src-${kind}-${axis}`;
+  el.draggable = true;
+  el.title = kind === 'ten' ? '10' : '1';
+
+  el.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('kind', kind);
+    e.dataTransfer.setData('axis', axis);
+    e.dataTransfer.effectAllowed = 'copy';
+  });
+  el.addEventListener('click', () => {
+    const units = kind === 'ten' ? 10 : 1;
+    if (axis === 'h') addTop(units);
+    else              addRight(units);
+  });
+  return el;
+}
+
+// ═══════════════════════════════════════════════════
+// RESET (double-click on canvas)
+// ═══════════════════════════════════════════════════
+document.getElementById('gCanvas').addEventListener('dblclick', e => {
+  if (e.target === document.getElementById('gCanvas') ||
+      e.target === document.getElementById('arrayZone') ||
+      e.target === document.getElementById('gridSVG')) {
+    topSegs  = [];
+    rightSegs = [];
+    Object.keys(_prev).forEach(k => delete _prev[k]);
+    layout();
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// ZOOM
+// ═══════════════════════════════════════════════════
+document.getElementById('zoomSlider').addEventListener('input', e => {
+  document.documentElement.style.setProperty('--zoom', e.target.value);
+  // Rebuild bank block sizes (driven by CSS var, just need repaint)
+  buildBanks();
+  layout();
+});
+
+// ═══════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════
+buildBanks();
+layout();
+</script>
+</body>
+</html>
