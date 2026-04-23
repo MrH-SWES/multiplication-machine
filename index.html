@@ -1355,8 +1355,8 @@ function checkOverflows() {
     if (count >= 10) {
       anyOverflow = true;
       // Highlight the first complete set of 10 blocks
-      for(let i = 0; i < 10; i++) {
-        if(blocks[i]) blocks[i].classList.add('ready-to-fuse');
+      for (let i = 0; i < 10; i++) {
+        if (blocks[i]) blocks[i].classList.add('ready-to-fuse');
       }
     }
   });
