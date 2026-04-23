@@ -30,6 +30,10 @@
 
       /* ── Physical block geometry (Phase 2) ── */
       --cube-base: calc(var(--cell) * 0.95);
+
+      /* ── Static source-block geometry (Banks - Do Not Zoom) ── */
+      --src-cell: 36px;
+      --src-cube-base: calc(var(--src-cell) * 0.95);
       --depth:     calc(var(--cell) * 0.2);
 
       /* Derived face colours with lighting */
@@ -177,37 +181,64 @@
     /* ── PLACED RAIL BLOCKS (base) ── */
     .rb { flex-shrink: 0 !important; }
 
-    /* Horizontal Blocks (Top Rail & Bank) */
-    .src-ten-h, .rb-ten-h {
+    /* --- STATIC SOURCE BLOCKS (Banks - Do Not Zoom) --- */
+    .src-ten-h {
+        width: calc(var(--src-cell) * 10); height: var(--src-cube-base);
+        background: var(--tens-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
+        border-radius: 6px; display: flex; flex-direction: row; flex-shrink: 0;
+    }
+    .src-one-h {
+        width: var(--src-cube-base); height: var(--src-cube-base);
+        background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
+        border-radius: 6px; flex-shrink: 0;
+    }
+    .src-ten-v {
+        width: var(--src-cube-base); height: calc(var(--src-cell) * 10);
+        background: var(--tens-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
+        border-radius: 6px; display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    .src-one-v {
+        width: var(--src-cube-base); height: var(--src-cube-base);
+        background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
+        border-radius: 6px; flex-shrink: 0;
+    }
+    .src-ten-v .ten-seg, .src-ten-h .ten-seg {
+        flex: 1; box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset;
+    }
+    .src-ten-v .ten-seg { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.15); }
+    .src-ten-v .ten-seg:last-child { border-bottom: none; }
+    .src-ten-h .ten-seg { border-right: 1px solid rgba(0,0,0,0.15); border-bottom: none; }
+    .src-ten-h .ten-seg:last-child { border-right: none; }
+
+    /* --- DYNAMIC RAIL BLOCKS (Grid - Scale with Zoom) --- */
+    .rb-ten-h {
         width: calc(var(--cell) * 10); height: var(--cube-base);
         background: var(--tens-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
         border-radius: calc(6px * var(--zoom)); display: flex; flex-direction: row; flex-shrink: 0;
     }
-    .src-one-h, .rb-one-h {
+    .rb-one-h {
         width: var(--cube-base); height: var(--cube-base);
         background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
         border-radius: calc(6px * var(--zoom)); flex-shrink: 0;
     }
-
-    /* Vertical Blocks (Right Rail & Bank) */
-    .src-ten-v, .rb-ten-v {
+    .rb-ten-v {
         width: var(--cube-base); height: calc(var(--cell) * 10);
         background: var(--tens-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
         border-radius: calc(6px * var(--zoom)); display: flex; flex-direction: column; flex-shrink: 0;
     }
-    .src-one-v, .rb-one-v {
+    .rb-one-v {
         width: var(--cube-base); height: var(--cube-base);
         background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
         border-radius: calc(6px * var(--zoom)); flex-shrink: 0;
     }
-
-    /* Vertical Ten-Bar segments need bottom borders, not right borders */
-    .src-ten-v .ten-seg, .rb-ten-v .ten-seg {
-        flex: 1; border-right: none; border-bottom: 1px solid rgba(0,0,0,0.15);
+    .rb-ten-v .ten-seg {
+        flex: 1; border-right: none; border-bottom: 1px solid rgba(0,0,0,0.15); box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset;
     }
-    .src-ten-v .ten-seg:last-child, .rb-ten-v .ten-seg:last-child {
-        border-bottom: none;
+    .rb-ten-v .ten-seg:last-child { border-bottom: none; }
+    .rb-ten-h .ten-seg {
+        flex: 1; border-right: 1px solid rgba(0,0,0,0.15); border-bottom: none; box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset;
     }
+    .rb-ten-h .ten-seg:last-child { border-right: none; }
 
     .rail-rest {
       flex:1; min-width:4px; min-height:4px;
@@ -318,15 +349,15 @@
     }
     .bin {
       min-width: 120px;
-      max-width: 260px;
       height: 100px;
       border-radius: 16px;
       border: 2.5px dashed rgba(0,0,0,.12);
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
+      /* Force strict base-10 rows */
+      display: grid;
+      grid-template-columns: repeat(10, max-content);
+      gap: 2px;
+      align-content: end;
       justify-content: center;
-      gap: 4px;
       padding: 8px 10px;
       transition: border-color .2s, background .2s, transform .15s var(--spring);
       position: relative;
@@ -479,15 +510,15 @@
                   0 6px 18px rgba(0,0,0,.4);
     }
 
-    /* ── OVERFLOW STATE ── */
-    .bin.overflow {
-      border-style: solid !important;
-      animation: overflowPulse 0.9s ease-in-out infinite;
-      cursor: pointer;
+    /* ── FUSION CUE ── */
+    .ready-to-fuse {
+        animation: fusePulse 1.2s infinite alternate;
+        cursor: pointer;
+        z-index: 10;
     }
-    @keyframes overflowPulse {
-      0%, 100% { border-color: rgba(57, 255, 20, 0.4); box-shadow: 0 0 0 0 rgba(57, 255, 20, 0); }
-      50%      { border-color: rgba(57, 255, 20, 1);   box-shadow: 0 0 15px 4px rgba(57, 255, 20, 0.4); }
+    @keyframes fusePulse {
+        0%   { filter: brightness(1) drop-shadow(0 0 0px rgba(57, 255, 20, 0)); transform: rotateX(10deg) scale(1); }
+        100% { filter: brightness(1.2) drop-shadow(0 0 6px rgba(57, 255, 20, 0.8)); transform: rotateX(10deg) scale(1.05); }
     }
 
     /* ── ALG PANEL LOCK OVERLAY ── */
@@ -509,16 +540,6 @@
     }
     .alg-lock-overlay.active { display: flex; }
     .alg-lock-icon { font-size: 2rem; }
-    .alg-lock-msg {
-      font-size: .58rem;
-      font-weight: 800;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #FF3B30;
-      text-align: center;
-      padding: 0 16px;
-      line-height: 1.6;
-    }
 
     .bin-count {
       position: absolute;
@@ -635,7 +656,6 @@
   <div class="alg-panel">
     <div class="alg-lock-overlay" id="algLock">
       <div class="alg-lock-icon">🔒</div>
-      <div class="alg-lock-msg">Regroup overflow<br>before recording</div>
     </div>
     <div class="alg-problem">
       <div class="alg-row">
@@ -1326,10 +1346,19 @@ function checkOverflows() {
   ];
 
   let anyOverflow = false;
+
   bins.forEach(({ el, count, type }) => {
-    const over = count >= 10;
-    if (over) anyOverflow = true;
-    el.classList.toggle('overflow', over);
+    const blocks = el.querySelectorAll('.cube, .ten-bar, .hundred-flat');
+    // Strip old classes
+    blocks.forEach(b => b.classList.remove('ready-to-fuse'));
+
+    if (count >= 10) {
+      anyOverflow = true;
+      // Highlight the first complete set of 10 blocks
+      for(let i = 0; i < 10; i++) {
+        if(blocks[i]) blocks[i].classList.add('ready-to-fuse');
+      }
+    }
   });
 
   const overlay = document.getElementById('algLock');
@@ -1522,7 +1551,7 @@ document.getElementById('gCanvas').addEventListener('dblclick', e => {
     document.querySelectorAll('.squeegee,.sweep-fill,.harvest-fill,.quad-ghost,.block-fly,.carry-fly').forEach(e=>e.remove());
     ['binO','binT','binH'].forEach(id => {
       document.getElementById(id).querySelectorAll('.cube,.ten-bar,.hundred-flat').forEach(e=>e.remove());
-      document.getElementById(id).classList.remove('overflow','accepting');
+      document.getElementById(id).classList.remove('accepting');
     });
     document.getElementById('algLock').classList.remove('active');
     updateBinCounts();
