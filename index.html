@@ -31,8 +31,8 @@
       /* ── Physical block geometry (Phase 2) ── */
       --block-zoom: 1;
       --slot-w:    calc(18px * var(--block-zoom));
-      --cube-base: calc(14px * var(--block-zoom));
-      --depth:     calc(5px  * var(--block-zoom));
+      --cube-base: calc(var(--cell) * 0.85);
+      --depth:     calc(var(--cell) * 0.2);
 
       /* Derived face colours with lighting */
       --ones-top:   #FF3B5C;
@@ -180,6 +180,10 @@
     .rb { flex-shrink:0; border-radius:4px; box-shadow:var(--shadow-block); }
     .rb.tens { background:var(--tens); }
     .rb.ones { background:var(--ones); }
+    .rb.h.tens { width: calc(var(--cell) * 10); height: var(--rail); }
+    .rb.h.ones { width: var(--cell); height: var(--rail); }
+    .rb.v.tens { width: var(--rail); height: calc(var(--cell) * 10); }
+    .rb.v.ones { width: var(--rail); height: var(--cell); }
 
     .rail-rest {
       flex:1; min-width:4px; min-height:4px;
@@ -321,7 +325,7 @@
        PHYSICAL BLOCKS — 3-D Isometric
     ══════════════════════════════════════ */
     .cube, .ten-bar, .hundred-flat {
-      flex-shrink: 0;
+      flex-shrink: 0 !important;
       position: relative;
       display: inline-flex;
       transform: rotateX(10deg);
@@ -334,7 +338,7 @@
     /* CUBE (ones unit — red) */
     .cube {
         width: var(--cube-base); height: var(--cube-base); border-radius: calc(6px * var(--block-zoom));
-        background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block); position: relative; flex-shrink: 0;
+        background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block); position: relative; flex-shrink: 0 !important;
     }
     .cube::after {
         content: '1'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -343,8 +347,8 @@
 
     /* TEN-BAR (tens unit — blue) */
     .ten-bar {
-        width: calc(var(--slot-w) * 10 - var(--depth)); height: var(--cube-base); border-radius: calc(6px * var(--block-zoom));
-        background: var(--tens-front); transform: rotateX(10deg); display: flex; box-shadow: var(--shadow-block); position: relative; flex-shrink: 0;
+        width: calc( (var(--cube-base) + 1px) * 10 ); height: var(--cube-base); border-radius: calc(6px * var(--block-zoom));
+        background: var(--tens-front); transform: rotateX(10deg); display: flex; box-shadow: var(--shadow-block); position: relative; flex-shrink: 0 !important;
     }
     .ten-seg {
       flex: 1;
@@ -373,8 +377,8 @@
 
     /* HUNDRED-FLAT (hundreds — green) */
     .hundred-flat {
-      width:  calc(var(--cube-base) * 10 + var(--depth) * 0.05);
-      height: calc(var(--cube-base) * 10 + var(--depth) * 0.05);
+      width:  calc( (var(--cube-base) + 1px) * 10 );
+      height: calc( (var(--cube-base) + 1px) * 10 );
       background: transparent;
       display: grid;
       grid-template-columns: repeat(10, 1fr);
@@ -795,6 +799,10 @@ function layout() {
   updateAlg(A, B);
   placeSqueegee(C, R, A, B);
   renderSweepFill(C, A, B);
+  if (sweepState === 'stopped-oo' || sweepState === 'stopped-to') {
+    showHarvestFill(C, A, B);
+  }
+  updateSqPosition();
 }
 
 function drawGrid(C, A, B) {
@@ -857,9 +865,7 @@ function renderTopRail(C, R, A) {
   rail.innerHTML = '';
   topSegs.forEach(s => {
     const el = document.createElement('div');
-    el.className = 'rb ' + (s===10?'tens':'ones');
-    el.style.height = R+'px';
-    el.style.width  = (s===10 ? C*10 : C)+'px';
+    el.className = 'rb h ' + (s===10?'tens':'ones');
     el.style.borderRadius = '3px';
     rail.appendChild(el);
   });
@@ -886,9 +892,7 @@ function renderRightRail(C, R, B) {
   rail.innerHTML = '';
   rightSegs.forEach(s => {
     const el = document.createElement('div');
-    el.className = 'rb ' + (s===10?'tens':'ones');
-    el.style.width  = R+'px';
-    el.style.height = (s===10 ? C*10 : C)+'px';
+    el.className = 'rb v ' + (s===10?'tens':'ones');
     el.style.borderRadius = '3px';
     rail.appendChild(el);
   });
@@ -1071,10 +1075,12 @@ function renderSweepFill(C, A, B) {
     wrapper.style.top      = top  + 'px';
     wrapper.style.width    = w + 'px';
     wrapper.style.height   = h + 'px';
-    wrapper.style.overflow = 'hidden';
-    wrapper.style.display  = 'flex';
-    wrapper.style.flexWrap = 'wrap';
-    wrapper.style.gap      = '0';
+    wrapper.style.overflow       = 'hidden';
+    wrapper.style.display        = 'flex';
+    wrapper.style.flexWrap       = 'wrap';
+    wrapper.style.gap            = '1px';
+    wrapper.style.alignContent   = 'flex-start';
+    wrapper.style.padding        = '2px';
     wrapper.style.alignItems     = 'flex-start';
     wrapper.style.justifyContent = 'flex-start';
     wrapper.style.background     = 'none';
@@ -1143,11 +1149,13 @@ function makeHarvestFill(cls, x, y, w, h, val, C) {
   el.style.top    = y + 'px';
   el.style.width  = w + 'px';
   el.style.height = h + 'px';
-  el.style.overflow      = 'hidden';
-  el.style.display       = 'flex';
-  el.style.flexWrap      = 'wrap';
-  el.style.gap           = '0';
-  el.style.alignItems    = 'flex-start';
+  el.style.overflow       = 'hidden';
+  el.style.display        = 'flex';
+  el.style.flexWrap       = 'wrap';
+  el.style.gap            = '1px';
+  el.style.alignContent   = 'flex-start';
+  el.style.padding        = '2px';
+  el.style.alignItems     = 'flex-start';
   el.style.justifyContent = 'flex-start';
   el.style.background    = 'none';
   const blockType  = cls === 'oo' ? 'cube' : 'ten-bar';
