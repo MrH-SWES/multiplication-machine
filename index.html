@@ -244,7 +244,7 @@
        DASHBOARD FLOOR
     ══════════════════════════════════════ */
     .dashboard-floor {
-      height: 110px;
+      height: 120px;
       flex-shrink: 0;
       background: var(--surface);
       border-top: 1.5px solid var(--border);
@@ -269,8 +269,9 @@
       color: var(--text-light);
     }
     .bin {
-      min-width: 80px;
-      height: 64px;
+      min-width: 96px;
+      max-width: 180px;
+      height: 68px;
       border-radius: 14px;
       border: 2px dashed rgba(0,0,0,.12);
       display: flex;
@@ -294,19 +295,122 @@
     .bin.tens-bin.accepting     { border-color:var(--tens);     background:rgba(65,105,225,.06); }
     .bin.ones-bin.accepting     { border-color:var(--ones);     background:rgba(220,20,60,.06); }
 
-    /* Tokens inside bins */
-    .bin-token {
-      border-radius: 3px;
+    /* ── PHYSICAL BLOCKS inside bins ── */
+    .cube, .ten-bar, .hundred-flat {
       flex-shrink: 0;
+      border-radius: 3px;
+      box-shadow: inset 1px 1px 0 rgba(255,255,255,.5), inset -1px -1px 0 rgba(0,0,0,.18), 0 2px 4px rgba(0,0,0,.22);
+      position: relative;
     }
-    .bin-token.ones-token     { width:12px; height:12px; background:var(--ones); box-shadow:0 1px 3px rgba(0,0,0,.2); }
-    .bin-token.tens-token     { width:30px; height:10px; background:var(--tens); box-shadow:0 1px 3px rgba(0,0,0,.2); }
-    .bin-token.hundreds-token { width:28px; height:28px; background:var(--hundreds); box-shadow:0 1px 3px rgba(0,0,0,.2); }
-    .bin-token.pop { animation: tokenPop .35s var(--spring) both; }
-    @keyframes tokenPop {
-      0%   { transform: scale(0) translateY(8px); opacity:0; }
-      100% { transform: scale(1) translateY(0);   opacity:1; }
+    /* Ones: small red square */
+    .cube {
+      width: 11px;
+      height: 11px;
+      background: var(--ones);
+      border-radius: 2px;
     }
+    /* Tens: blue horizontal stick */
+    .ten-bar {
+      width: 32px;
+      height: 10px;
+      background: var(--tens);
+      border-radius: 3px;
+    }
+    /* Hundreds: green square flat */
+    .hundred-flat {
+      width: 26px;
+      height: 26px;
+      background: var(--hundreds);
+      border-radius: 3px;
+    }
+
+    /* Flying block — fixed position, animated to bin */
+    .block-fly {
+      position: fixed;
+      pointer-events: none;
+      z-index: 200;
+      border-radius: 3px;
+      box-shadow: inset 1px 1px 0 rgba(255,255,255,.5), inset -1px -1px 0 rgba(0,0,0,.18), 0 3px 8px rgba(0,0,0,.3);
+    }
+    .block-fly.cube         { width:11px; height:11px; background:var(--ones); }
+    .block-fly.ten-bar      { width:32px; height:10px; background:var(--tens); }
+    .block-fly.hundred-flat { width:26px; height:26px; background:var(--hundreds); }
+
+    /* Pop-in animation once settled in bin */
+    .block-settle {
+      animation: blockSettle .28s var(--spring) both;
+    }
+    @keyframes blockSettle {
+      0%   { transform: scale(0.4) translateY(6px); opacity:0; }
+      100% { transform: scale(1)   translateY(0);   opacity:1; }
+    }
+
+    /* ── OVERFLOW STATE ── */
+    .bin.overflow {
+      border-style: solid !important;
+      animation: overflowPulse 0.9s ease-in-out infinite;
+      cursor: pointer;
+    }
+    @keyframes overflowPulse {
+      0%,100% { border-color: #FF9500; box-shadow: 0 0 0 0 rgba(255,149,0,0); }
+      45%     { border-color: #FF3B30; box-shadow: 0 0 0 6px rgba(255,59,48,.22); }
+    }
+    .bin.overflow::after {
+      content: 'CLICK TO REGROUP';
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: .44rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: #FF3B30;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* ── ALG PANEL LOCK OVERLAY ── */
+    .alg-panel {
+      position: relative; /* needed for overlay child */
+    }
+    .alg-lock-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(245,245,247,0.72);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      z-index: 40;
+      border-radius: 0;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .alg-lock-overlay.active { display: flex; }
+    .alg-lock-icon {
+      font-size: 1.8rem;
+    }
+    .alg-lock-msg {
+      font-size: .6rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #FF3B30;
+      text-align: center;
+      padding: 0 16px;
+    }
+
+    /* Carry block animation */
+    .carry-fly {
+      position: fixed;
+      pointer-events: none;
+      z-index: 250;
+      border-radius: 3px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.35);
+    }
+    .carry-fly.ten-bar      { width:32px; height:10px; background:var(--tens); }
+    .carry-fly.hundred-flat { width:26px; height:26px; background:var(--hundreds); }
 
     /* Bin count badge */
     .bin-count {
@@ -482,6 +586,10 @@
 
   <!-- Algorithm panel -->
   <div class="alg-panel">
+    <div class="alg-lock-overlay" id="algLock">
+      <div class="alg-lock-icon">🔒</div>
+      <div class="alg-lock-msg">Regroup overflow<br>before recording</div>
+    </div>
     <div class="alg-problem">
       <div class="alg-row">
         <div class="ad t" id="aA_T"></div>
@@ -1003,47 +1111,51 @@ function makeHarvestFill(cls, x, y, w, h, val, C) {
 }
 
 // ═══════════════════════════════════════════════════
-// HARVEST  — click fill → drop tokens into bin → ghost
+// HARVEST  — click fill → spawn discrete blocks → ghost
 // ═══════════════════════════════════════════════════
 function harvestQuadrant(cls, val, A, B, C) {
-  // Remove harvest fill
   document.querySelectorAll('.harvest-fill').forEach(e=>e.remove());
 
-  // Leave ghost
+  // ── Determine quadrant screen rect for fly-from origin ──
   const az = document.getElementById('arrayZone');
+  const azRect = az.getBoundingClientRect();
+
+  let qx,qy,qw,qh;
+  if (cls === 'oo') {
+    qx = A.tens*C; qy = B.tens*C;
+    qw = A.ones*C; qh = (B.ones>0?B.ones:B.total)*C;
+  } else {
+    qx = 0; qy = B.tens*C;
+    qw = A.tens*C; qh = B.ones*C;
+  }
+
+  // Origin for fly animation: center of quadrant in viewport coords
+  const originX = azRect.left + qx + qw/2;
+  const originY = azRect.top  + qy + qh/2;
+
+  // ── Leave ghost ──
   const ghost = document.createElement('div');
   ghost.className = 'quad-ghost ' + cls;
-
-  let x,y,w,h;
-  if (cls === 'oo') {
-    x = A.tens*C; y = B.tens*C;
-    w = A.ones*C; h = (B.ones>0?B.ones:B.total)*C;
-  } else {
-    x = 0; y = B.tens*C;
-    w = A.tens*C; h = B.ones*C;
-  }
-  ghost.style.left   = x+'px'; ghost.style.top    = y+'px';
-  ghost.style.width  = w+'px'; ghost.style.height = h+'px';
-  ghost.style.fontSize = Math.min(C*0.85,44)+'px';
-  ghost.textContent  = val;
+  ghost.style.left      = qx+'px'; ghost.style.top    = qy+'px';
+  ghost.style.width     = qw+'px'; ghost.style.height = qh+'px';
+  ghost.style.fontSize  = Math.min(C*0.85,44)+'px';
+  ghost.textContent     = val;
   az.appendChild(ghost);
 
-  // Drop tokens into ones bin
-  // All extruded blocks here are ones-type (ones×ones or tens-cols×ones-rows)
-  // For this phase: all go to the ones bin
-  const count = val; // each cell = 1 unit
-  dropTokensToBin(count, cls==='oo' ? 'ones' : 'ones', cls);
+  // ── Determine block type & target bin ──
+  // oo (ones×ones) → .cube → ones bin
+  // to (tens×ones or ones×tens) → .ten-bar → tens bin
+  // We only support oo and to quadrants in Phase 1/2
+  const blockType = (cls === 'oo') ? 'cube' : 'ten-bar';
+  const binType   = (cls === 'oo') ? 'ones' : 'tens';
 
-  // Advance state machine
+  spawnBlocks(blockType, val, binType, originX, originY);
+
+  // ── Advance squeegee state machine ──
   if (cls === 'oo') {
     sweepState = 'harvested-oo';
-    // Unlock squeegee — allow it to continue
     const sq = document.getElementById('sq-ones');
-    if (sq) {
-      sq.classList.remove('locked');
-      sq.classList.add('pulsing');
-    }
-    // If A has no tens, we're done with red sweep
+    if (sq) { sq.classList.remove('locked'); sq.classList.add('pulsing'); }
     if (A.T === 0) {
       sweepState = 'done';
       if (sq) sq.classList.remove('pulsing');
@@ -1055,45 +1167,192 @@ function harvestQuadrant(cls, val, A, B, C) {
   }
 
   renderSweepFill(C, A, B);
-  updateBinCounts();
 }
 
 // ═══════════════════════════════════════════════════
-// BIN  — drop tokens in with stagger animation
+// STEP 1 — spawnBlocks(type, count, targetBin, originX, originY)
+// Creates discrete DOM elements and animates them into the bin
 // ═══════════════════════════════════════════════════
-function dropTokensToBin(count, type, cls) {
-  const binEl = type==='ones' ? document.getElementById('binO')
-              : type==='tens' ? document.getElementById('binT')
-              :                 document.getElementById('binH');
+function spawnBlocks(type, count, binType, originX, originY) {
+  const binEl = binType==='ones'     ? document.getElementById('binO')
+              : binType==='tens'     ? document.getElementById('binT')
+              :                        document.getElementById('binH');
 
-  if (type==='ones')     binOnes     += count;
-  else if (type==='tens') binTens   += count;
-  else                    binHundreds+= count;
+  // Update logical count
+  if (binType==='ones')         binOnes     += count;
+  else if (binType==='tens')    binTens     += count;
+  else                          binHundreds += count;
 
-  // Clear existing tokens and re-render (simpler than appending)
-  binEl.querySelectorAll('.bin-token').forEach(e=>e.remove());
+  const binRect = binEl.getBoundingClientRect();
+  const destX   = binRect.left + binRect.width/2;
+  const destY   = binRect.top  + binRect.height/2;
 
-  const total = type==='ones' ? binOnes : type==='tens' ? binTens : binHundreds;
-  const tokenClass = type+'-token';
+  // Stagger each block's launch
+  const MAX_VISUAL = 30; // cap DOM blocks rendered
+  const visualCount = Math.min(count, MAX_VISUAL);
 
-  // Show up to 20 tokens visually, then just show count
-  const showCount = Math.min(total, 20);
-  for (let i=0; i<showCount; i++) {
-    const tok = document.createElement('div');
-    tok.className = 'bin-token ' + tokenClass;
-    if (i >= total - count) {
-      // New tokens animate in with stagger
-      tok.classList.add('pop');
-      tok.style.animationDelay = ((i - (total - count)) * 40) + 'ms';
-    }
-    binEl.appendChild(tok);
+  for (let i = 0; i < visualCount; i++) {
+    const delay = i * Math.min(60, 400/visualCount); // tighten stagger for many blocks
+
+    setTimeout(() => {
+      // 1. Create flying clone
+      const fly = document.createElement('div');
+      fly.className = `block-fly ${type}`;
+      fly.style.left      = (originX - (type==='cube'?5.5:16)) + 'px';
+      fly.style.top       = (originY - (type==='cube'?5.5:5))  + 'px';
+      fly.style.transition= 'none';
+      document.body.appendChild(fly);
+
+      // 2. Animate toward bin center with slight arc
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const dur = 340 + Math.random()*80;
+          const jitterX = (Math.random()-0.5)*30;
+          fly.style.transition = `left ${dur}ms cubic-bezier(0.4,0,1,1), top ${dur}ms cubic-bezier(0.3,0,0.7,1), opacity ${dur}ms`;
+          fly.style.left = (destX + jitterX - (type==='cube'?5.5:16)) + 'px';
+          fly.style.top  = (destY - (type==='cube'?5.5:5)) + 'px';
+          fly.style.opacity = '0.4';
+
+          setTimeout(() => {
+            fly.remove();
+            // 3. Settle: add real block inside bin
+            const block = document.createElement('div');
+            block.className = `${type} block-settle`;
+            block.style.animationDelay = '0ms';
+            binEl.appendChild(block);
+            // Keep count badge above blocks
+            const badge = binEl.querySelector('.bin-count');
+            if (badge) binEl.appendChild(badge);
+
+            // Flash bin
+            binEl.classList.add('accepting');
+            setTimeout(()=>binEl.classList.remove('accepting'), 350);
+
+            updateBinCounts();
+            checkOverflows();
+          }, dur);
+        });
+      });
+    }, delay);
   }
 
-  // Flash the bin
-  binEl.classList.add('accepting');
-  setTimeout(() => binEl.classList.remove('accepting'), 500);
+  // If count > MAX_VISUAL, schedule a final count update after all land
+  if (count > MAX_VISUAL) {
+    const totalDelay = visualCount * Math.min(60, 400/visualCount) + 420;
+    setTimeout(() => { updateBinCounts(); checkOverflows(); }, totalDelay);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// STEP 2 — checkOverflows()
+// Inspects all bins; applies/clears .overflow; locks alg panel
+// ═══════════════════════════════════════════════════
+function checkOverflows() {
+  const bins = [
+    { el: document.getElementById('binH'), count: binHundreds, type: 'hundreds' },
+    { el: document.getElementById('binT'), count: binTens,     type: 'tens' },
+    { el: document.getElementById('binO'), count: binOnes,     type: 'ones' },
+  ];
+
+  let anyOverflow = false;
+  bins.forEach(({ el, count, type }) => {
+    const over = count >= 10;
+    if (over) anyOverflow = true;
+    el.classList.toggle('overflow', over);
+  });
+
+  // Lock / unlock alg panel
+  const overlay = document.getElementById('algLock');
+  overlay.classList.toggle('active', anyOverflow);
+}
+
+// ═══════════════════════════════════════════════════
+// STEP 3 — triggerRegroup(binEl, binType)
+// Destroy 10 units, spawn 1 higher-order carry block, animate carry to next bin
+// ═══════════════════════════════════════════════════
+function triggerRegroup(binEl, binType) {
+  // Determine counts & types
+  let fromCount, toType, toEl, carryClass;
+  if (binType === 'ones') {
+    if (binOnes < 10) return;
+    binOnes -= 10;
+    fromCount = binOnes;
+    toType    = 'tens';
+    toEl      = document.getElementById('binT');
+    binTens  += 1;
+    carryClass = 'ten-bar';
+  } else if (binType === 'tens') {
+    if (binTens < 10) return;
+    binTens -= 10;
+    fromCount = binTens;
+    toType    = 'hundreds';
+    toEl      = document.getElementById('binH');
+    binHundreds += 1;
+    carryClass  = 'hundred-flat';
+  } else {
+    return; // hundreds can't carry further in this context
+  }
+
+  // ── Rebuild FROM bin's block DOM ──
+  rebuildBinDOM(binEl, binType);
+
+  // ── Carry animation ──
+  const fromRect = binEl.getBoundingClientRect();
+  const toRect   = toEl.getBoundingClientRect();
+
+  const carry = document.createElement('div');
+  carry.className = `carry-fly ${carryClass}`;
+  carry.style.left = (fromRect.left + fromRect.width/2 - (carryClass==='ten-bar'?16:13)) + 'px';
+  carry.style.top  = (fromRect.top  + fromRect.height/2 - (carryClass==='ten-bar'?5:13)) + 'px';
+  carry.style.transition = 'none';
+  document.body.appendChild(carry);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const dur = 380;
+      carry.style.transition = `left ${dur}ms var(--spring), top ${dur}ms var(--spring), opacity ${dur}ms`;
+      carry.style.left = (toRect.left + toRect.width/2  - (carryClass==='ten-bar'?16:13)) + 'px';
+      carry.style.top  = (toRect.top  + toRect.height/2 - (carryClass==='ten-bar'?5:13))  + 'px';
+
+      setTimeout(() => {
+        carry.remove();
+        // Settle the carried block in target bin
+        const block = document.createElement('div');
+        block.className = `${carryClass} block-settle`;
+        toEl.appendChild(block);
+        const badge = toEl.querySelector('.bin-count');
+        if (badge) toEl.appendChild(badge);
+
+        toEl.classList.add('accepting');
+        setTimeout(()=>toEl.classList.remove('accepting'), 350);
+
+        updateBinCounts();
+        checkOverflows();
+      }, dur);
+    });
+  });
 
   updateBinCounts();
+  checkOverflows();
+}
+
+// ── Rebuild a bin's block DOM to match logical count ──
+function rebuildBinDOM(binEl, binType) {
+  const blockClass = binType==='ones' ? 'cube' : binType==='tens' ? 'ten-bar' : 'hundred-flat';
+  const logCount   = binType==='ones' ? binOnes : binType==='tens' ? binTens : binHundreds;
+
+  // Remove existing blocks (not the badge)
+  binEl.querySelectorAll('.cube, .ten-bar, .hundred-flat').forEach(e=>e.remove());
+
+  const showCount = Math.min(logCount, 30);
+  for (let i=0; i<showCount; i++) {
+    const block = document.createElement('div');
+    block.className = blockClass;
+    binEl.appendChild(block);
+  }
+  // Keep badge on top
+  const badge = binEl.querySelector('.bin-count');
+  if (badge) binEl.appendChild(badge);
 }
 
 function updateBinCounts() {
@@ -1175,6 +1434,19 @@ function makeSrc(kind, axis) {
 }
 
 // ═══════════════════════════════════════════════════
+// BIN REGROUP CLICK HANDLERS  (Step 3)
+// ═══════════════════════════════════════════════════
+document.getElementById('binO').addEventListener('click', () => {
+  if (binOnes >= 10) triggerRegroup(document.getElementById('binO'), 'ones');
+});
+document.getElementById('binT').addEventListener('click', () => {
+  if (binTens >= 10) triggerRegroup(document.getElementById('binT'), 'tens');
+});
+document.getElementById('binH').addEventListener('click', () => {
+  // hundreds can't carry further; nothing to do
+});
+
+// ═══════════════════════════════════════════════════
 // RESET  (double-click canvas)
 // ═══════════════════════════════════════════════════
 document.getElementById('gCanvas').addEventListener('dblclick', e => {
@@ -1187,8 +1459,13 @@ document.getElementById('gCanvas').addEventListener('dblclick', e => {
     sweepState='idle'; sweepX=0;
     binOnes=0; binTens=0; binHundreds=0;
     Object.keys(_prev).forEach(k=>delete _prev[k]);
-    document.querySelectorAll('.squeegee,.sweep-fill,.harvest-fill,.quad-ghost').forEach(e=>e.remove());
-    document.querySelectorAll('.bin-token').forEach(e=>e.remove());
+    document.querySelectorAll('.squeegee,.sweep-fill,.harvest-fill,.quad-ghost,.block-fly,.carry-fly').forEach(e=>e.remove());
+    // Clear all physical blocks from bins
+    ['binO','binT','binH'].forEach(id => {
+      document.getElementById(id).querySelectorAll('.cube,.ten-bar,.hundred-flat').forEach(e=>e.remove());
+      document.getElementById(id).classList.remove('overflow','accepting');
+    });
+    document.getElementById('algLock').classList.remove('active');
     updateBinCounts();
     layout();
   }
