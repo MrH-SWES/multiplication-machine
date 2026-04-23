@@ -226,8 +226,8 @@
       position: absolute;
       pointer-events: none;
     }
-    .sweep-fill.oo { background: rgba(220,20,60,.18); }
-    .sweep-fill.to { background: rgba(65,105,225,.18); }
+    .sweep-fill.oo { }
+    .sweep-fill.to { }
 
     .quad-ghost {
       position: absolute;
@@ -333,42 +333,18 @@
 
     /* CUBE (ones unit — red) */
     .cube {
-      width:  var(--cube-base);
-      height: var(--cube-base);
-      background: var(--ones-front);
-      border-radius: calc(6px * var(--block-zoom));
-      box-shadow:
-        calc(var(--depth) * 0.7) calc(var(--depth) * -0.7) 0 0 var(--ones-side),
-        0 0 0 1px rgba(255,255,255,.15) inset;
-    }
-    .cube::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--ones-top);
-      border-radius: 2px 2px 0 0;
-      transform: rotateX(-80deg) scaleY(0.45) translateY(-100%);
-      transform-origin: top center;
+        width: var(--cube-base); height: var(--cube-base); border-radius: calc(6px * var(--block-zoom));
+        background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block); position: relative; flex-shrink: 0;
     }
     .cube::after {
-        content: '1'; 
-        position: absolute; inset: 0; 
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 800; color: rgba(255,255,255,0.6); 
-        font-size: calc(14px * var(--block-zoom)); pointer-events: none;
+        content: '1'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        font-weight: 800; color: rgba(255,255,255,0.6); font-size: calc(18px * var(--block-zoom)); pointer-events: none;
     }
 
     /* TEN-BAR (tens unit — blue) */
     .ten-bar {
-      width:  calc(var(--cube-base) * 10 + var(--depth) * 9 * 0.05);
-      height: var(--cube-base);
-      background: transparent;
-      display: flex;
-      flex-direction: row;
-      gap: 1px;
-      border-radius: calc(6px * var(--block-zoom));
-      filter: drop-shadow(calc(var(--depth)*0.5) calc(var(--depth)*-0.5) 0 var(--tens-side))
-              drop-shadow(0 3px 6px rgba(0,0,0,.28));
+        width: calc(var(--slot-w) * 10 - var(--depth)); height: var(--cube-base); border-radius: calc(6px * var(--block-zoom));
+        background: var(--tens-front); transform: rotateX(10deg); display: flex; box-shadow: var(--shadow-block); position: relative; flex-shrink: 0;
     }
     .ten-seg {
       flex: 1;
@@ -747,7 +723,7 @@ let binHundreds = 0;
 
 function triggerAutoZoom() {
   const A = factorA(), B = factorB();
-  if (!A.total || !B.total) return;
+  if (!A.total && !B.total) return;
 
   const algPanelW   = 200;
   const bankTopH    = 60;
@@ -759,8 +735,8 @@ function triggerAutoZoom() {
   const availH = window.innerHeight - bankTopH  - dashFloorH - scrollbarM - 48;
 
   const CELL_BASE = 36, RAIL_BASE = 18;
-  const canvasNatW = A.total * CELL_BASE + RAIL_BASE + GAP + 32;
-  const canvasNatH = B.total * CELL_BASE + RAIL_BASE + 32;
+  const canvasNatW = Math.max(1, A.total) * CELL_BASE + RAIL_BASE + GAP + 32;
+  const canvasNatH = Math.max(1, B.total) * CELL_BASE + RAIL_BASE + 32;
 
   const scaleW = availW / canvasNatW;
   const scaleH = availH / canvasNatH;
@@ -851,11 +827,19 @@ function drawGrid(C, A, B) {
 
 function dropHandler(axis) {
   return {
-    over:  e => { e.preventDefault(); e.currentTarget.classList.add('over'); },
-    leave: e => { e.currentTarget.classList.remove('over'); },
+    over:  e => {
+      e.preventDefault();
+      const rest = e.currentTarget.querySelector('.rail-rest');
+      if (rest) rest.classList.add('over');
+    },
+    leave: e => {
+      const rest = e.currentTarget.querySelector('.rail-rest');
+      if (rest) rest.classList.remove('over');
+    },
     drop:  e => {
       e.preventDefault();
-      e.currentTarget.classList.remove('over');
+      const rest = e.currentTarget.querySelector('.rail-rest');
+      if (rest) rest.classList.remove('over');
       const kind = e.dataTransfer.getData('kind');
       const ax   = e.dataTransfer.getData('axis');
       if (ax !== axis) return;
@@ -867,6 +851,9 @@ function dropHandler(axis) {
 
 function renderTopRail(C, R, A) {
   const rail = document.getElementById('topRail');
+  if (rail._dhOver)  { rail.removeEventListener('dragover',  rail._dhOver);  rail._dhOver  = null; }
+  if (rail._dhLeave) { rail.removeEventListener('dragleave', rail._dhLeave); rail._dhLeave = null; }
+  if (rail._dhDrop)  { rail.removeEventListener('drop',      rail._dhDrop);  rail._dhDrop  = null; }
   rail.innerHTML = '';
   topSegs.forEach(s => {
     const el = document.createElement('div');
@@ -880,16 +867,22 @@ function renderTopRail(C, R, A) {
     const dz = document.createElement('div');
     dz.className = 'rail-rest';
     dz.style.height = R+'px';
-    const dh = dropHandler('h');
-    dz.addEventListener('dragover', dh.over);
-    dz.addEventListener('dragleave', dh.leave);
-    dz.addEventListener('drop', dh.drop);
     rail.appendChild(dz);
+    const dh = dropHandler('h');
+    rail._dhOver  = dh.over;
+    rail._dhLeave = dh.leave;
+    rail._dhDrop  = dh.drop;
+    rail.addEventListener('dragover',  rail._dhOver);
+    rail.addEventListener('dragleave', rail._dhLeave);
+    rail.addEventListener('drop',      rail._dhDrop);
   }
 }
 
 function renderRightRail(C, R, B) {
   const rail = document.getElementById('rightRail');
+  if (rail._dhOver)  { rail.removeEventListener('dragover',  rail._dhOver);  rail._dhOver  = null; }
+  if (rail._dhLeave) { rail.removeEventListener('dragleave', rail._dhLeave); rail._dhLeave = null; }
+  if (rail._dhDrop)  { rail.removeEventListener('drop',      rail._dhDrop);  rail._dhDrop  = null; }
   rail.innerHTML = '';
   rightSegs.forEach(s => {
     const el = document.createElement('div');
@@ -903,17 +896,21 @@ function renderRightRail(C, R, B) {
     const dz = document.createElement('div');
     dz.className = 'rail-rest';
     dz.style.width = R+'px';
-    const dh = dropHandler('v');
-    dz.addEventListener('dragover', dh.over);
-    dz.addEventListener('dragleave', dh.leave);
-    dz.addEventListener('drop', dh.drop);
     rail.appendChild(dz);
+    const dh = dropHandler('v');
+    rail._dhOver  = dh.over;
+    rail._dhLeave = dh.leave;
+    rail._dhDrop  = dh.drop;
+    rail.addEventListener('dragover',  rail._dhOver);
+    rail.addEventListener('dragleave', rail._dhLeave);
+    rail.addEventListener('drop',      rail._dhDrop);
   }
 }
 
 function addTop(units) {
   if (totalTop() + units > 99) return;
   topSegs.push(units);
+  topSegs.sort((a, b) => b - a);
   resetSweep();
   triggerAutoZoom();
   layout();
@@ -921,6 +918,7 @@ function addTop(units) {
 function addRight(units) {
   if (totalRight() + units > 99) return;
   rightSegs.push(units);
+  rightSegs.sort((a, b) => b - a);
   resetSweep();
   triggerAutoZoom();
   layout();
@@ -1066,6 +1064,26 @@ function renderSweepFill(C, A, B) {
 
   const az = document.getElementById('arrayZone');
 
+  const makeBlockWrapper = (cls, left, top, w, h, blockType, count) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'sweep-fill ' + cls;
+    wrapper.style.left     = left + 'px';
+    wrapper.style.top      = top  + 'px';
+    wrapper.style.width    = w + 'px';
+    wrapper.style.height   = h + 'px';
+    wrapper.style.overflow = 'hidden';
+    wrapper.style.display  = 'flex';
+    wrapper.style.flexWrap = 'wrap';
+    wrapper.style.gap      = '0';
+    wrapper.style.alignItems     = 'flex-start';
+    wrapper.style.justifyContent = 'flex-start';
+    wrapper.style.background     = 'none';
+    for (let i = 0; i < count; i++) {
+      wrapper.appendChild(makeBlockEl(blockType));
+    }
+    return wrapper;
+  };
+
   if (sweepState==='sweeping-oo' || sweepState==='harvested-oo') {
     const fillLeft  = sweepX;
     const fillRight = A.total * C;
@@ -1073,13 +1091,7 @@ function renderSweepFill(C, A, B) {
     const fillTop   = B.tens * C;
     const fillH     = B.ones * C; 
     if (fillW > 0 && fillH > 0) {
-      const fill = document.createElement('div');
-      fill.className = 'sweep-fill oo';
-      fill.style.left   = fillLeft + 'px';
-      fill.style.top    = fillTop  + 'px';
-      fill.style.width  = fillW + 'px';
-      fill.style.height = fillH + 'px';
-      az.appendChild(fill);
+      az.appendChild(makeBlockWrapper('oo', fillLeft, fillTop, fillW, fillH, 'cube', A.ones * B.ones));
     }
   }
 
@@ -1090,13 +1102,7 @@ function renderSweepFill(C, A, B) {
     const fillTop   = B.tens * C;
     const fillH     = B.ones * C;
     if (fillW > 0 && fillH > 0) {
-      const fill = document.createElement('div');
-      fill.className = 'sweep-fill to';
-      fill.style.left   = fillLeft + 'px';
-      fill.style.top    = fillTop  + 'px';
-      fill.style.width  = fillW + 'px';
-      fill.style.height = fillH + 'px';
-      az.appendChild(fill);
+      az.appendChild(makeBlockWrapper('to', fillLeft, fillTop, fillW, fillH, 'ten-bar', A.T * B.ones));
     }
   }
 }
@@ -1137,8 +1143,18 @@ function makeHarvestFill(cls, x, y, w, h, val, C) {
   el.style.top    = y + 'px';
   el.style.width  = w + 'px';
   el.style.height = h + 'px';
-  el.style.fontSize = Math.min(C * 0.9, 48) + 'px';
-  el.textContent = val;
+  el.style.overflow      = 'hidden';
+  el.style.display       = 'flex';
+  el.style.flexWrap      = 'wrap';
+  el.style.gap           = '0';
+  el.style.alignItems    = 'flex-start';
+  el.style.justifyContent = 'flex-start';
+  el.style.background    = 'none';
+  const blockType  = cls === 'oo' ? 'cube' : 'ten-bar';
+  const blockCount = cls === 'oo' ? val : Math.floor(val / 10);
+  for (let i = 0; i < blockCount; i++) {
+    el.appendChild(makeBlockEl(blockType));
+  }
   return el;
 }
 
