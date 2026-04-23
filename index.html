@@ -209,13 +209,6 @@
         background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
         border-radius: 6px; flex-shrink: 0;
     }
-    .src-ten-v .ten-seg, .src-ten-h .ten-seg {
-        flex: 1; box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset;
-    }
-    .src-ten-v .ten-seg { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.15); }
-    .src-ten-v .ten-seg:last-child { border-bottom: none; }
-    .src-ten-h .ten-seg { border-right: 1px solid rgba(0,0,0,0.15); border-bottom: none; }
-    .src-ten-h .ten-seg:last-child { border-right: none; }
 
     /* --- DYNAMIC RAIL BLOCKS (Grid - Scale with Zoom) --- */
     .rb-ten-h {
@@ -238,14 +231,6 @@
         background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
         border-radius: calc(6px * var(--zoom)); flex-shrink: 0;
     }
-    .rb-ten-v .ten-seg {
-        flex: 1; border-right: none; border-bottom: 1px solid rgba(0,0,0,0.15); box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset;
-    }
-    .rb-ten-v .ten-seg:last-child { border-bottom: none; }
-    .rb-ten-h .ten-seg {
-        flex: 1; border-right: 1px solid rgba(0,0,0,0.15); border-bottom: none; box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset;
-    }
-    .rb-ten-h .ten-seg:last-child { border-right: none; }
 
     .rail-rest {
       flex:1; min-width:4px; min-height:4px;
@@ -406,23 +391,6 @@
     .ten-bar {
         width: calc(var(--cell) * 10); height: var(--cube-base); border-radius: calc(6px * var(--zoom));
         background: var(--tens-front); transform: rotateX(10deg); display: flex; box-shadow: var(--shadow-block); position: relative; flex-shrink: 0 !important;
-    }
-    .ten-seg {
-      flex: 1;
-      height: 100%;
-      background: var(--tens-front);
-      border-radius: 2px;
-      position: relative;
-      box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset;
-    }
-    .ten-seg::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--tens-top);
-      border-radius: 2px 2px 0 0;
-      transform: rotateX(-80deg) scaleY(0.45) translateY(-100%);
-      transform-origin: top center;
     }
 
     /* HUNDRED-FLAT (hundreds — green) */
@@ -887,13 +855,6 @@ function renderTopRail(C, R, A) {
   topSegs.forEach(s => {
     const el = document.createElement('div');
     el.className = s === 10 ? 'rb-ten-h' : 'rb-one-h';
-    if (s === 10) {
-      for (let i = 0; i < 10; i++) {
-        const seg = document.createElement('div');
-        seg.className = 'ten-seg';
-        el.appendChild(seg);
-      }
-    }
     rail.appendChild(el);
   });
   if (A.total < 99) {
@@ -920,13 +881,6 @@ function renderRightRail(C, R, B) {
   rightSegs.forEach(s => {
     const el = document.createElement('div');
     el.className = s === 10 ? 'rb-ten-v' : 'rb-one-v';
-    if (s === 10) {
-      for (let i = 0; i < 10; i++) {
-        const seg = document.createElement('div');
-        seg.className = 'ten-seg';
-        el.appendChild(seg);
-      }
-    }
     rail.appendChild(el);
   });
   if (B.total < 99) {
@@ -1253,13 +1207,7 @@ function harvestQuadrant(cls, val, A, B, C) {
 function makeBlockEl(type) {
   const el = document.createElement('div');
   el.className = type;
-  if (type === 'ten-bar') {
-    for (let s = 0; s < 10; s++) {
-      const seg = document.createElement('div');
-      seg.className = 'ten-seg';
-      el.appendChild(seg);
-    }
-  } else if (type === 'hundred-flat') {
+  if (type === 'hundred-flat') {
     for (let s = 0; s < 100; s++) {
       const seg = document.createElement('div');
       seg.className = 'hund-seg';
@@ -1305,14 +1253,6 @@ function spawnBlocks(type, count, binType, originX, originY) {
       fly.style.width      = sz.w + 'px';
       fly.style.height     = sz.h + 'px';
       fly.style.transition = 'none';
-      
-      if (type === 'ten-bar') {
-        for (let s = 0; s < 10; s++) {
-          const seg = document.createElement('div');
-          seg.className = 'ten-seg';
-          fly.appendChild(seg);
-        }
-      }
 
       document.body.appendChild(fly);
 
@@ -1413,13 +1353,7 @@ function triggerRegroup(binEl, binType) {
   const carry = document.createElement('div');
   carry.className = `carry-fly ${carryClass}`;
   
-  if (carryClass === 'ten-bar') {
-    for (let s = 0; s < 10; s++) {
-      const seg = document.createElement('div');
-      seg.className = 'ten-seg';
-      carry.appendChild(seg);
-    }
-  } else if (carryClass === 'hundred-flat') {
+  if (carryClass === 'hundred-flat') {
     for (let s = 0; s < 100; s++) {
       const seg = document.createElement('div');
       seg.className = 'hund-seg';
@@ -1531,13 +1465,6 @@ function makeSrc(kind, axis) {
   el.className = `src src-${kind}-${axis}`;
   el.draggable = true;
   el.title = kind==='ten'?'10':'1';
-  if (kind === 'ten') {
-    for (let i = 0; i < 10; i++) {
-      const seg = document.createElement('div');
-      seg.className = 'ten-seg';
-      el.appendChild(seg);
-    }
-  }
   el.addEventListener('dragstart', e => {
     e.dataTransfer.setData('kind', kind);
     e.dataTransfer.setData('axis', axis);
