@@ -18,10 +18,11 @@
 
       --spring: cubic-bezier(0.34,1.56,0.64,1);
 
-      /* Colors */
-      --hundreds: #2E7D32;
-      --tens:     #4169E1;
-      --ones:     #DC143C;
+      /* Colors (Base) */
+      --thousands: #4CBB17; /* Green */
+      --hundreds:  #FFD700; /* Gold */
+      --tens:      #4169E1; /* Royal Blue */
+      --ones:      #DC143C; /* Crimson Red */
 
       /* Grid geometry */
       --zoom: 1;
@@ -36,16 +37,22 @@
       --src-cube-base: calc(var(--src-cell) * 0.95);
       --depth:     calc(var(--cell) * 0.2);
 
-      /* Derived face colours with lighting */
+      /* Derived face colours with lighting for 3D extrusion */
       --ones-top:   #FF3B5C;
       --ones-side:  #8B0A1E;
       --ones-front: #DC143C;
+
       --tens-top:   #6682FF;
       --tens-side:  #1A2E99;
       --tens-front: #4169E1;
-      --hund-top:   #4CAF50;
-      --hund-side:  #1B5E20;
-      --hund-front: #2E7D32;
+
+      --hund-top:   #FFE44D;
+      --hund-side:  #B8860B;
+      --hund-front: #FFD700;
+
+      --thou-top:   #5EE024;
+      --thou-side:  #2E750E;
+      --thou-front: #4CBB17;
 
       /* UI Shadows */
       --shadow-block: 
@@ -364,7 +371,8 @@
       perspective: 400px;
       perspective-origin: 50% 20%;
     }
-    .bin.hundreds-bin { border-color: rgba(46,125,50,.35); }
+    .bin.thousands-bin { border-color: rgba(76, 187, 23, 0.35); }
+    .bin.hundreds-bin { border-color: rgba(255, 215, 0, 0.45); }
     .bin.tens-bin     { border-color: rgba(65,105,225,.35); }
     .bin.ones-bin     { border-color: rgba(220,20,60,.35); }
 
@@ -372,7 +380,8 @@
       border-style: solid;
       transform: scale(1.035);
     }
-    .bin.hundreds-bin.accepting { border-color:var(--hundreds); background:rgba(46,125,50,.05); }
+    .bin.thousands-bin.accepting { border-color: var(--thousands); background: rgba(76, 187, 23, 0.05); }
+    .bin.hundreds-bin.accepting { border-color: var(--hundreds); background: rgba(255, 215, 0, 0.08); }
     .bin.tens-bin.accepting     { border-color:var(--tens);     background:rgba(65,105,225,.05); }
     .bin.ones-bin.accepting     { border-color:var(--ones);     background:rgba(220,20,60,.05); }
 
