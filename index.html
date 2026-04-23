@@ -26,7 +26,7 @@
       /* Grid geometry */
       --zoom: 1;
       --cell: calc(36px * var(--zoom));
-      --rail: calc(18px * var(--zoom));
+      --rail: var(--cell);
 
       /* ── Physical block geometry (Phase 2) ── */
       --block-zoom: 1;
@@ -117,6 +117,7 @@
       scrollbar-color: rgba(0,0,0,.12) transparent;
       background: var(--bg);
       position: relative;
+      padding: 32px;
     }
     .grid-scroller::-webkit-scrollbar { width:6px; height:6px; }
     .grid-scroller::-webkit-scrollbar-thumb { background:rgba(0,0,0,.12); border-radius:3px; }
@@ -137,18 +138,22 @@
     /* ── Canvas (sized by JS) ── */
     #gCanvas {
       position: relative;
+      background: var(--surface);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.05);
     }
 
     #topRail {
       position: absolute;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
     }
     #rightRail {
       position: absolute;
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
+      align-items: center;
     }
     #arrayZone {
       position: absolute;
@@ -231,6 +236,38 @@
 
     /* ── PLACED RAIL BLOCKS (base) ── */
     .rb { flex-shrink: 0 !important; }
+
+    /* Horizontal Blocks (Top Rail & Bank) */
+    .src-ten-h, .rb-ten-h {
+        width: calc((var(--cube-base) + 1px) * 10); height: var(--cube-base);
+        background: var(--tens-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
+        border-radius: calc(6px * var(--block-zoom)); display: flex; flex-direction: row; flex-shrink: 0;
+    }
+    .src-one-h, .rb-one-h {
+        width: var(--cube-base); height: var(--cube-base);
+        background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
+        border-radius: calc(6px * var(--block-zoom)); flex-shrink: 0;
+    }
+
+    /* Vertical Blocks (Right Rail & Bank) */
+    .src-ten-v, .rb-ten-v {
+        width: var(--cube-base); height: calc((var(--cube-base) + 1px) * 10);
+        background: var(--tens-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
+        border-radius: calc(6px * var(--block-zoom)); display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    .src-one-v, .rb-one-v {
+        width: var(--cube-base); height: var(--cube-base);
+        background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
+        border-radius: calc(6px * var(--block-zoom)); flex-shrink: 0;
+    }
+
+    /* Vertical Ten-Bar segments need bottom borders, not right borders */
+    .src-ten-v .ten-seg, .rb-ten-v .ten-seg {
+        flex: 1; border-right: none; border-bottom: 1px solid rgba(0,0,0,0.15);
+    }
+    .src-ten-v .ten-seg:last-child, .rb-ten-v .ten-seg:last-child {
+        border-bottom: none;
+    }
 
     .rail-rest {
       flex:1; min-width:4px; min-height:4px;
@@ -734,7 +771,7 @@
 'use strict';
 
 function cp() { return 36 * parseFloat(document.documentElement.style.getPropertyValue('--zoom') || 1); }
-function rp() { return cp() * 0.5; }
+function rp() { return cp(); }
 const GAP = 8; 
 
 let topSegs   = [];
@@ -769,10 +806,11 @@ function triggerAutoZoom() {
   const dashFloorH  = 160;
   const scrollbarM  = 16;
 
-  const availW = window.innerWidth  - algPanelW - bankRightW - scrollbarM - 48;
-  const availH = window.innerHeight - bankTopH  - dashFloorH - scrollbarM - 48;
+  const availW = window.innerWidth  - algPanelW - bankRightW - scrollbarM - 48 - PADDING_OFFSET;
+  const availH = window.innerHeight - bankTopH  - dashFloorH - scrollbarM - 48 - PADDING_OFFSET;
 
-  const CELL_BASE = 36, RAIL_BASE = 18;
+  const CELL_BASE = 36, RAIL_BASE = CELL_BASE; // RAIL_BASE now equals CELL_BASE (rp() returns full cell)
+  const PADDING_OFFSET = 64; // 32px padding on each side of .grid-scroller
   const canvasNatW = Math.max(1, A.total) * CELL_BASE + RAIL_BASE + GAP + 32;
   const canvasNatH = Math.max(1, B.total) * CELL_BASE + RAIL_BASE + 32;
 
@@ -899,7 +937,7 @@ function renderTopRail(C, R, A) {
   rail.innerHTML = '';
   topSegs.forEach(s => {
     const el = document.createElement('div');
-    el.className = 'rb h ' + (s===10?'tens':'ones');
+    el.className = s === 10 ? 'rb-ten-h' : 'rb-one-h';
     if (s === 10) {
       for (let i = 0; i < 10; i++) {
         const seg = document.createElement('div');
@@ -932,7 +970,7 @@ function renderRightRail(C, R, B) {
   rail.innerHTML = '';
   rightSegs.forEach(s => {
     const el = document.createElement('div');
-    el.className = 'rb v ' + (s===10?'tens':'ones');
+    el.className = s === 10 ? 'rb-ten-v' : 'rb-one-v';
     if (s === 10) {
       for (let i = 0; i < 10; i++) {
         const seg = document.createElement('div');
