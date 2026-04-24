@@ -127,7 +127,6 @@
       background: var(--bg);
       position: relative;
       padding: 16px;
-      /* Bulletproof Canvas Centering */
       display: flex;
       align-items: flex-start;
       justify-content: center;
@@ -158,42 +157,21 @@
       flex-shrink: 0;
     }
 
-    #topRail {
-      position: absolute;
-      display: flex;
-      align-items: center;
-    }
-    #rightRail {
-      position: absolute;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    #arrayZone {
-      position: absolute;
-    }
-    #gridSVG {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      overflow: visible;
-    }
+    #topRail { position: absolute; display: flex; align-items: center; }
+    #rightRail { position: absolute; display: flex; flex-direction: column; align-items: center; }
+    #arrayZone { position: absolute; }
+    #gridSVG { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
 
     /* ── SOURCE BLOCKS ── */
     .src {
-      cursor: grab;
-      border-radius: 5px;
-      box-shadow: var(--shadow-block);
-      flex-shrink: 0;
-      transition: transform .15s var(--spring);
+      cursor: grab; border-radius: 5px; box-shadow: var(--shadow-block);
+      flex-shrink: 0; transition: transform .15s var(--spring);
     }
     .src:hover  { transform: rotateX(10deg) translateY(-2px) scale(1.06); }
     .src:active { transform: rotateX(10deg) scale(.92); cursor: grabbing; }
 
-    /* ── PLACED RAIL BLOCKS (base) ── */
     .rb { flex-shrink: 0 !important; }
 
-    /* --- STATIC SOURCE BLOCKS (Banks - Do Not Zoom) --- */
     .src-ten-h {
         width: calc(var(--src-cell) * 10); height: var(--src-cube-base);
         background: var(--tens-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
@@ -215,7 +193,6 @@
         border-radius: 6px; flex-shrink: 0;
     }
 
-    /* --- DYNAMIC RAIL BLOCKS (Grid - Scale with Zoom) --- */
     .rb-ten-h {
         width: calc(var(--cell) * 10); height: var(--cube-base);
         background: var(--tens-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
@@ -248,50 +225,28 @@
        SQUEEGEE
     ══════════════════════════════════════ */
     .squeegee {
-      position: absolute;
-      width: 6px;
-      border-radius: 5px;
-      cursor: grab;
-      z-index: 30;
+      position: absolute; width: 6px; border-radius: 5px; cursor: grab; z-index: 30;
       box-shadow: 0 2px 8px rgba(0,0,0,.3), inset 1px 0 0 rgba(255,255,255,.4);
-      transition: box-shadow .15s, opacity .2s;
-      touch-action: none;
+      transition: box-shadow .15s, opacity .2s; touch-action: none;
     }
     .squeegee:active { cursor: grabbing; }
     .squeegee.sq-ones { background: var(--ones); }
     .squeegee.sq-tens { background: var(--tens); }
 
-    .squeegee.locked {
-      opacity: .35;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-    .squeegee.pulsing {
-      animation: sqPulse 1.4s ease-in-out infinite;
-    }
+    .squeegee.locked { opacity: .35; cursor: not-allowed; pointer-events: none; }
+    .squeegee.pulsing { animation: sqPulse 1.4s ease-in-out infinite; }
     @keyframes sqPulse {
       0%,100% { box-shadow: 0 2px 8px rgba(0,0,0,.3), inset 1px 0 0 rgba(255,255,255,.4); }
-      50%     { box-shadow: 0 2px 8px rgba(0,0,0,.3), inset 1px 0 0 rgba(255,255,255,.4),
-                            0 0 0 5px rgba(220,20,60,.25); }
+      50%     { box-shadow: 0 2px 8px rgba(0,0,0,.3), inset 1px 0 0 rgba(255,255,255,.4), 0 0 0 5px rgba(220,20,60,.25); }
     }
 
     /* ══════════════════════════════════════
        QUADRANT fills & ghost labels
     ══════════════════════════════════════ */
-    .sweep-fill {
-      position: absolute;
-      pointer-events: none;
-    }
-
+    .sweep-fill { position: absolute; pointer-events: none; }
     .quad-ghost {
-      position: absolute;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      letter-spacing: -0.04em;
-      pointer-events: none;
-      border-radius: 3px;
+      position: absolute; display: flex; align-items: center; justify-content: center;
+      font-weight: 900; letter-spacing: -0.04em; pointer-events: none; border-radius: 3px;
     }
     .quad-ghost.oo { background: rgba(220,20,60,.15);  color: rgba(220,20,60,.55); }
     .quad-ghost.to { background: rgba(65,105,225,.07); color: rgba(65,105,225,.55); }
@@ -299,24 +254,14 @@
     .quad-ghost.tt { background: rgba(255,215,0,.15);  color: rgba(255,215,0,.65); }
 
     .harvest-fill {
-      position: absolute;
-      border-radius: 3px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      letter-spacing: -0.04em;
-      animation: harvestPulse 1.2s ease-in-out infinite;
+      position: absolute; border-radius: 3px; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; font-weight: 900; letter-spacing: -0.04em; animation: harvestPulse 1.2s ease-in-out infinite;
     }
     .harvest-fill.oo { background: rgba(220,20,60,.22); color: rgba(220,20,60,.7); }
     .harvest-fill.to { background: rgba(65,105,225,.22); color: rgba(65,105,225,.7); }
     .harvest-fill.ot { background: rgba(65,105,225,.22); color: rgba(65,105,225,.7); }
     .harvest-fill.tt { background: rgba(255,215,0,.35); color: rgba(255,215,0,.8); }
-    @keyframes harvestPulse {
-      0%,100% { opacity: 1; }
-      50%     { opacity: .7; }
-    }
+    @keyframes harvestPulse { 0%,100% { opacity: 1; } 50% { opacity: .7; } }
 
     /* ══════════════════════════════════════
        DASHBOARD FLOOR & BINS (Chunky Drawer)
@@ -325,75 +270,44 @@
       position: absolute;
       bottom: 0;
       left: 50%;
-      transform: translateX(-50%) translateY(calc(100% - 32px)); /* Closed: only handle peeks out */
-      transition: transform 0.5s var(--spring);
-      /* Chunky Steel Plate Aesthetic */
+      --tray-shift: 0px; /* Dynamic shift value */
+      transform: translateX(calc(-50% + var(--tray-shift))) translateY(calc(100% - 32px)); 
+      transition: transform 0.6s var(--spring);
       background: linear-gradient(135deg, #fdfdfd 0%, #e8e8ed 100%);
       border: 1px solid rgba(0,0,0,0.1);
       border-bottom: none;
       border-radius: 16px 16px 0 0;
       box-shadow: 0 -8px 30px rgba(0,0,0,0.15), inset 0 2px 2px rgba(255,255,255,1);
       z-index: 100;
-      padding: 40px 24px 16px; /* Room for handle at top */
+      padding: 40px 24px 16px; 
       width: max-content;
       display: flex;
       align-items: center;
       gap: 20px;
     }
     .dashboard-floor.open {
-      transform: translateX(-50%) translateY(0);
+      transform: translateX(calc(-50% + var(--tray-shift))) translateY(0);
     }
     .drawer-handle {
-      position: absolute;
-      top: 0; left: 0; right: 0; height: 32px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      border-radius: 16px 16px 0 0;
+      position: absolute; top: 0; left: 0; right: 0; height: 32px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 16px 16px 0 0;
     }
     .drawer-handle::after {
-      content: ''; width: 48px; height: 6px; border-radius: 3px;
-      background: rgba(0,0,0,0.2);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.6);
+      content: ''; width: 48px; height: 6px; border-radius: 3px; background: rgba(0,0,0,0.2); box-shadow: 0 1px 0 rgba(255,255,255,0.6);
     }
 
-    .bin-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-    }
-    .bin-label {
-      font-size: .58rem;
-      font-weight: 700;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      color: var(--text-light);
-    }
+    .bin-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .bin-label { font-size: .58rem; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-light); }
     .bin {
-      min-height: 90px;
-      border-radius: 8px;
-      border: 2.5px dashed rgba(0,0,0,.12);
-      padding: 8px;
-      transition: border-color .2s;
-      position: relative;
-      transform-style: preserve-3d;
-      display: flex;
-      gap: 1px;
+      min-height: 90px; border-radius: 8px; border: 2.5px dashed rgba(0,0,0,.12); padding: 8px;
+      transition: border-color .2s; position: relative; transform-style: preserve-3d; display: flex; gap: 1px;
     }
     
-    /* Wrap-reverse builds rows from the bottom up */
     .bin.ones-bin, .bin.hundreds-bin { 
-      flex-wrap: wrap-reverse; 
-      align-content: flex-start;
-      width: calc((var(--cube-base) * 10) + 34px); 
+      flex-wrap: wrap-reverse; align-content: flex-start; width: calc((var(--cube-base) * 10) + 34px); 
     }
-    
-    /* Column-reverse stacks horizontal sticks cleanly like a ladder */
     .bin.tens-bin { 
-      flex-direction: column-reverse; 
-      align-items: center; 
-      justify-content: flex-start;
-      min-width: calc((var(--cube-base) * 10) + 34px); 
+      flex-direction: column-reverse; align-items: center; justify-content: flex-start; min-width: calc((var(--cube-base) * 10) + 34px); 
     }
 
     .bin.thousands-bin { border-color: rgba(76, 187, 23, 0.35); }
@@ -401,86 +315,48 @@
     .bin.tens-bin     { border-color: rgba(65,105,225,.35); }
     .bin.ones-bin     { border-color: rgba(220,20,60,.35); }
 
-    .bin.accepting {
-      border-style: solid;
-      transform: scale(1.035);
-    }
+    .bin.accepting { border-style: solid; transform: scale(1.035); }
     .bin.thousands-bin.accepting { border-color: var(--thousands); background: rgba(76, 187, 23, 0.05); }
     .bin.hundreds-bin.accepting { border-color: var(--hundreds); background: rgba(255, 215, 0, 0.08); }
     .bin.tens-bin.accepting     { border-color:var(--tens);     background:rgba(65,105,225,.05); }
     .bin.ones-bin.accepting     { border-color:var(--ones);     background:rgba(220,20,60,.05); }
 
-    /* Record Pulses */
-    .bin.ones-bin.record-pulse {
-      border-color: var(--ones) !important;
-      box-shadow: 0 0 15px 4px rgba(220, 20, 60, 0.35) !important;
-      cursor: pointer;
-      animation: recPulse 1s ease-in-out infinite alternate;
-    }
-    .bin.tens-bin.record-pulse {
-      border-color: var(--tens) !important;
-      box-shadow: 0 0 15px 4px rgba(65, 105, 225, 0.35) !important;
-      cursor: pointer;
-      animation: recPulse 1s ease-in-out infinite alternate;
-    }
-    .bin.hundreds-bin.record-pulse {
-      border-color: var(--hundreds) !important;
-      box-shadow: 0 0 15px 4px rgba(255, 215, 0, 0.35) !important;
-      cursor: pointer;
-      animation: recPulse 1s ease-in-out infinite alternate;
-    }
-    .bin.thousands-bin.record-pulse {
-      border-color: var(--thousands) !important;
-      box-shadow: 0 0 15px 4px rgba(76, 187, 23, 0.35) !important;
-      cursor: pointer;
-      animation: recPulse 1s ease-in-out infinite alternate;
-    }
+    .bin.ones-bin.record-pulse { border-color: var(--ones) !important; box-shadow: 0 0 15px 4px rgba(220, 20, 60, 0.35) !important; cursor: pointer; animation: recPulse 1s ease-in-out infinite alternate; }
+    .bin.tens-bin.record-pulse { border-color: var(--tens) !important; box-shadow: 0 0 15px 4px rgba(65, 105, 225, 0.35) !important; cursor: pointer; animation: recPulse 1s ease-in-out infinite alternate; }
+    .bin.hundreds-bin.record-pulse { border-color: var(--hundreds) !important; box-shadow: 0 0 15px 4px rgba(255, 215, 0, 0.35) !important; cursor: pointer; animation: recPulse 1s ease-in-out infinite alternate; }
+    .bin.thousands-bin.record-pulse { border-color: var(--thousands) !important; box-shadow: 0 0 15px 4px rgba(76, 187, 23, 0.35) !important; cursor: pointer; animation: recPulse 1s ease-in-out infinite alternate; }
     @keyframes recPulse { 0% { transform: scale(1); } 100% { transform: scale(1.03); } }
 
     /* ══════════════════════════════════════
        PHYSICAL BLOCKS — 3-D Isometric
     ══════════════════════════════════════ */
     .cube, .ten-bar, .ten-bar-v, .hundred-flat, .thousand-cube {
-      flex-shrink: 0 !important;
-      position: relative;
-      display: inline-flex;
-      transform: rotateX(10deg);
-      transform-style: preserve-3d;
-      filter: drop-shadow(0 3px 6px rgba(0,0,0,.28));
-      cursor: grab;
-      box-shadow: var(--shadow-block);
-      transition: opacity 0.2s; /* For row-fusing fades */
+      flex-shrink: 0 !important; position: relative; display: inline-flex;
+      transform: rotateX(10deg); transform-style: preserve-3d;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,.28)); cursor: grab;
+      box-shadow: var(--shadow-block); transition: opacity 0.2s;
     }
 
     .cube {
         width: var(--cube-base); height: var(--cube-base); border-radius: calc(6px * var(--zoom));
-        background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block); position: relative; flex-shrink: 0 !important;
+        background: var(--ones-front); position: relative; flex-shrink: 0 !important;
     }
     .ten-bar {
         width: calc(var(--cell) * 10); height: var(--cube-base); border-radius: calc(6px * var(--zoom));
-        background: var(--tens-front); transform: rotateX(10deg); display: flex; box-shadow: var(--shadow-block); position: relative; flex-shrink: 0 !important;
+        background: var(--tens-front); display: flex; position: relative; flex-shrink: 0 !important;
     }
     .ten-bar-v {
         width: var(--cube-base); height: calc(var(--cell) * 10); border-radius: calc(6px * var(--zoom));
-        background: var(--tens-front); transform: rotateX(10deg); display: flex; flex-direction: column; box-shadow: var(--shadow-block); position: relative; flex-shrink: 0 !important;
+        background: var(--tens-front); display: flex; flex-direction: column; position: relative; flex-shrink: 0 !important;
     }
     .hundred-flat {
-      width:  calc(var(--cell) * 10);
-      height: calc(var(--cell) * 10);
-      background: transparent;
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      grid-template-rows:    repeat(10, 1fr);
-      gap: 1px;
-      border-radius: calc(6px * var(--zoom));
-      filter: drop-shadow(calc(var(--depth)*0.5) calc(var(--depth)*-0.5) 0 var(--hund-side))
-              drop-shadow(0 4px 10px rgba(0,0,0,.3));
+      width:  calc(var(--cell) * 10); height: calc(var(--cell) * 10); background: transparent;
+      display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr);
+      gap: 1px; border-radius: calc(6px * var(--zoom));
+      filter: drop-shadow(calc(var(--depth)*0.5) calc(var(--depth)*-0.5) 0 var(--hund-side)) drop-shadow(0 4px 10px rgba(0,0,0,.3));
     }
     .hund-seg {
-      background: var(--hund-front);
-      border-radius: 1px;
-      position: relative;
-      box-shadow: 0 0 0 1px rgba(255,255,255,.1) inset;
+      background: var(--hund-front); border-radius: 1px; position: relative; box-shadow: 0 0 0 1px rgba(255,255,255,.1) inset;
     }
     .hund-seg::before {
       content: ''; position: absolute; inset: 0; background: var(--hund-top); border-radius: 1px 1px 0 0;
@@ -488,7 +364,7 @@
     }
     .thousand-cube {
       width: calc(var(--cube-base) * 10); height: calc(var(--cube-base) * 10);
-      background: var(--thousands-front); border-radius: calc(8px * var(--zoom)); transform: rotateX(10deg);
+      background: var(--thousands-front); border-radius: calc(8px * var(--zoom));
       box-shadow: calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 var(--thousands-side), 0 8px 24px rgba(0,0,0,0.2);
       position: relative; flex-shrink: 0 !important; cursor: grab;
     }
@@ -498,10 +374,7 @@
       transform: rotateX(-80deg) scaleY(0.45) translateY(-100%); transform-origin: top center;
     }
 
-    /* ── Flying block (fixed, animates to bin) ── */
-    .block-fly {
-      position: fixed; pointer-events: none; z-index: 200; transform: rotateX(10deg);
-    }
+    .block-fly { position: fixed; pointer-events: none; z-index: 200; transform: rotateX(10deg); }
     .block-fly.cube {
       width: var(--cube-base); height: var(--cube-base); background: var(--ones-front); border-radius: 2px;
       box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--ones-side), 0 4px 10px rgba(0,0,0,.35);
@@ -527,10 +400,7 @@
     .block-settle { animation: blockSettle .3s var(--spring) both; }
     @keyframes blockSettle { 0% { transform: rotateX(10deg) scale(0.35) translateY(8px); opacity: 0; } 100% { transform: rotateX(10deg) scale(1) translateY(0); opacity: 1; } }
 
-    /* ── Carry fly (regroup) ── */
-    .carry-fly {
-      position: fixed; pointer-events: none; z-index: 250; transform: rotateX(10deg); border-radius: 3px;
-    }
+    .carry-fly { position: fixed; pointer-events: none; z-index: 250; transform: rotateX(10deg); border-radius: 3px; }
     .carry-fly.ten-bar {
       width: calc(var(--cell) * 10); height: var(--cube-base); background: var(--tens-front);
       box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--tens-side), 0 6px 18px rgba(0,0,0,.4);
@@ -544,10 +414,7 @@
       box-shadow: calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 var(--thousands-side), 0 6px 18px rgba(0,0,0,.4);
     }
 
-    /* ── FUSION CUE ── */
-    .ready-to-fuse {
-        animation: fusePulse 1.2s infinite alternate; cursor: pointer; z-index: 10;
-    }
+    .ready-to-fuse { animation: fusePulse 1.2s infinite alternate; cursor: pointer; z-index: 10; }
     @keyframes fusePulse {
         0%   { filter: brightness(1) drop-shadow(0 0 0px rgba(57, 255, 20, 0)); transform: rotateX(10deg) scale(1); }
         100% { filter: brightness(1.2) drop-shadow(0 0 6px rgba(57, 255, 20, 0.8)); transform: rotateX(10deg) scale(1.05); }
@@ -589,17 +456,32 @@
     .ad.pop { animation:dPop .35s var(--spring) both; }
     @keyframes dPop { 0% { transform:scale(.5) translateY(8px); opacity:0; } 100% { transform:scale(1)  translateY(0);   opacity:1; } }
     .alg-line { height:2.5px; background:var(--text-main); width:100%; border-radius:2px; margin:5px 0 4px; }
+    
     .pp-section { width:100%; display:flex; flex-direction:column; gap:1px; margin-bottom:4px; }
     .pp-row { display:flex; align-items:baseline; justify-content:flex-end; gap:0; opacity:.12; transition:opacity .4s; }
     .pp-row.lit { opacity:1; }
     .pd { width:30px; height:42px; text-align:center; line-height:42px; font-size:2.3rem; font-weight:800; letter-spacing:-0.04em; color:var(--text-main); border-radius:8px; }
-    .pd.zero { color:var(--text-light); } .pd.pop  { animation:dPop .35s var(--spring) both; }
+    .pd.zero { color:var(--text-light); transition: opacity 0.3s; } 
+    .pd.pop  { animation:dPop .35s var(--spring) both; }
+    
     .sum-line { height:2.5px; background:var(--text-main); width:100%; border-radius:2px; margin:4px 0; opacity:.12; transition:opacity .4s; }
     .sum-line.lit { opacity:1; }
     .total-row { display:flex; align-items:baseline; justify-content:flex-end; gap:0; opacity:.12; transition:opacity .4s; margin-bottom:20px; }
     .total-row.lit { opacity:1; }
-    .td { width:30px; height:50px; text-align:center; line-height:50px; font-size:2.8rem; font-weight:900; letter-spacing:-0.04em; color:var(--text-main); border-radius:8px; }
+    .td { width:30px; height:50px; text-align:center; line-height:50px; font-size:2.8rem; font-weight:900; letter-spacing:-0.04em; color:var(--text-main); border-radius:8px; transition: background 0.2s, transform 0.2s; }
     .td.pop { animation:dPop .5s var(--spring) both; }
+
+    /* Zero and Sum Pulses */
+    .zero-pulse { animation: zPulse 1s infinite alternate; cursor: pointer; color: var(--ones) !important; }
+    @keyframes zPulse {
+      0% { transform: scale(1); opacity: 0.3; }
+      100% { transform: scale(1.3); opacity: 1; text-shadow: 0 0 10px rgba(220,20,60,0.4); }
+    }
+    .td.sum-pulse { animation: tdPulse 0.8s infinite alternate; cursor: pointer; color: var(--accent) !important; }
+    @keyframes tdPulse {
+      0% { transform: scale(1); background: transparent; }
+      100% { transform: scale(1.05); background: rgba(0, 122, 255, 0.1); }
+    }
 
     .watermark { position:fixed; bottom:auto; top:16px; left:16px; font-weight:900; font-size:.8rem; letter-spacing:-0.05em; color:var(--text-light); pointer-events:none; z-index:100; }
     .wbead { width:.2em; height:.2em; border-radius:50%; display:inline-block; margin-left:.04em; margin-bottom:.07em; background:linear-gradient(135deg,#e0e0e0,#a0a0a0,#d0d0d0); box-shadow:0 1px 3px rgba(0,0,0,.2); }
@@ -642,7 +524,7 @@
         <div class="bin tens-bin" id="binT"><span class="bin-count" id="cntT">0</span></div>
       </div>
       <div class="bin-divider"></div>
-      <div class="bin-group">
+      <div class="bin-group" id="groupO">
         <div class="bin-label">Ones</div>
         <div class="bin ones-bin" id="binO"><span class="bin-count" id="cntO">0</span></div>
       </div>
@@ -981,7 +863,7 @@ function placeSqueegee(C, R, A, B) {
     initSqueegeDrag(sq);
   }
 
-  if (sweepState === 'phase-1-done' || sweepState.includes('-ot') || sweepState.includes('-tt') || sweepState.includes('2') || sweepState === 'sum-phase') {
+  if (sweepState === 'phase-1-done' || sweepState.includes('-ot') || sweepState.includes('-tt') || sweepState.includes('2') || sweepState.includes('sum') || sweepState === 'record-zero-2') {
       sq.style.display = 'none';
   } else {
       sq.style.top    = sqTop + 'px';
@@ -1056,16 +938,46 @@ function initSqueegeDrag(sq) {
 }
 
 // ==========================================
-// PHASE 2: SQUEEGEE (Blue)
+// PHASE 2: ZERO LOCK & SQUEEGEE (Blue)
 // ==========================================
+function triggerZeroLock() {
+    const B = factorB();
+    if (B.T > 0) {
+        sweepState = 'record-zero-2';
+        const z = document.getElementById('p2_0');
+        z.textContent = '0';
+        z.style.opacity = '0.3';
+        z.classList.add('zero-pulse');
+        document.getElementById('dashDrawer').classList.remove('open');
+    } else {
+        startSumPhase();
+    }
+}
+
+document.getElementById('p2_0').addEventListener('click', function() {
+    if (sweepState === 'record-zero-2') {
+        this.classList.remove('zero-pulse');
+        this.style.opacity = '1';
+        _popAD('p2_0', 0, 'zero');
+        startPhase2();
+    }
+});
+
 function startPhase2() {
     const A = factorA(), B = factorB(), C = cp(), R = rp();
     document.getElementById('dashDrawer').classList.remove('open');
+    
+    // Shift tray Right!
+    const onesGroup = document.getElementById('groupO');
+    if (onesGroup) {
+        const shiftVal = onesGroup.offsetWidth + 20; 
+        document.getElementById('dashDrawer').style.setProperty('--tray-shift', shiftVal + 'px');
+    }
+
     if (B.T > 0) {
         sweepState = 'ready-2';
         sweepX2 = A.total * C;
         document.getElementById('pp2').classList.add('lit');
-        document.getElementById('pp1').classList.remove('lit'); 
         placeSqueegee2(C, R, A, B);
     } else {
         startSumPhase();
@@ -1073,6 +985,7 @@ function startPhase2() {
 }
 
 function placeSqueegee2(C, R, A, B) {
+    if (sweepState.includes('sum')) return;
     let sq2 = document.getElementById('sq-tens');
     if (!sq2) {
         sq2 = document.createElement('div');
@@ -1146,15 +1059,9 @@ function updateSqPosition() {
   if (sq2) sq2.style.left = (sweepX2 - 3) + 'px';
 }
 
-function renderSweepFill(C, A, B) {
-  document.querySelectorAll('.sweep-fill.p1').forEach(e=>e.remove());
-  if (!A.total || !B.total) return;
-  if (sweepState==='idle'||sweepState==='ready'||sweepState==='done') return;
-
-  const az = document.getElementById('arrayZone');
-  const makeBlockWrapper = (cls, left, top, w, h, blockType, count, cols, fullW) => {
+const makeBlockWrapper = (cls, left, top, w, h, blockType, count, cols, fullW) => {
     const wrapper = document.createElement('div');
-    wrapper.className = 'sweep-fill p1 ' + cls;
+    wrapper.className = `sweep-fill ${cls.includes('oo') || cls.includes('to') ? 'p1' : 'p2'} ${cls}`;
     wrapper.style.left     = left + 'px';
     wrapper.style.top      = top  + 'px';
     wrapper.style.width    = w + 'px';
@@ -1168,32 +1075,38 @@ function renderSweepFill(C, A, B) {
     inner.style.top = '0';
     inner.style.width = fullW + 'px';
     inner.style.height = h + 'px';
-    inner.style.display = 'grid';
-    inner.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-    inner.style.placeItems = 'center';
 
+    const rows = Math.ceil(count / cols);
+    const bW = fullW / cols;
+    const bH = h / rows;
+
+    let ix = 0, iy = 0;
     for (let i = 0; i < count; i++) {
-      inner.appendChild(makeBlockEl(blockType));
+        const b = makeBlockEl(blockType);
+        b.style.position = 'absolute';
+        b.style.left = (ix * bW + bW/2) + 'px';
+        b.style.top = (iy * bH + bH/2) + 'px';
+        b.style.transform = 'translate(-50%, -50%) rotateX(10deg)';
+        inner.appendChild(b);
+        ix++;
+        if (ix >= cols) { ix = 0; iy++; }
     }
     wrapper.appendChild(inner);
     return wrapper;
-  };
+};
 
+function renderSweepFill(C, A, B) {
+  document.querySelectorAll('.sweep-fill.p1').forEach(e=>e.remove());
+  if (!A.total || !B.total) return;
+  if (sweepState==='idle'||sweepState==='ready'||sweepState==='done') return;
+  const az = document.getElementById('arrayZone');
   if (sweepState==='sweeping-oo') {
-    const fillLeft  = sweepX;
-    const fillRight = A.total * C;
-    const fillW     = fillRight - fillLeft;
-    const fillTop   = B.tens * C;
-    const fillH     = B.ones * C; 
-    if (fillW > 0 && fillH > 0) az.appendChild(makeBlockWrapper('oo', fillLeft, fillTop, fillW, fillH, 'cube', A.ones * B.ones, A.ones, A.ones * C));
+    const fillLeft  = sweepX; const fillRight = A.total * C; const fillW = fillRight - fillLeft;
+    if (fillW > 0 && B.ones * C > 0) az.appendChild(makeBlockWrapper('oo', fillLeft, B.tens * C, fillW, B.ones * C, 'cube', A.ones * B.ones, A.ones, A.ones * C));
   }
   if (sweepState==='sweeping-to') {
-    const fillLeft  = sweepX;
-    const fillRight = A.tens * C;
-    const fillW     = fillRight - fillLeft;
-    const fillTop   = B.tens * C;
-    const fillH     = B.ones * C;
-    if (fillW > 0 && fillH > 0) az.appendChild(makeBlockWrapper('to', fillLeft, fillTop, fillW, fillH, 'ten-bar', A.T * B.ones, A.T, A.T * C));
+    const fillLeft  = sweepX; const fillRight = A.tens * C; const fillW = fillRight - fillLeft;
+    if (fillW > 0 && B.ones * C > 0) az.appendChild(makeBlockWrapper('to', fillLeft, B.tens * C, fillW, B.ones * C, 'ten-bar', A.T * B.ones, A.T, A.T * C));
   }
 }
 
@@ -1201,44 +1114,14 @@ function renderSweepFill2(C, A, B) {
   document.querySelectorAll('.sweep-fill.p2').forEach(e=>e.remove());
   if (!A.total || !B.total) return;
   if (!['ready-2', 'sweeping-ot', 'sweeping-tt', 'stopped-ot', 'stopped-tt'].includes(sweepState)) return;
-  
   const az = document.getElementById('arrayZone');
-  const makeBlockWrapper = (cls, left, top, w, h, blockType, count, cols, fullW) => {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'sweep-fill p2 ' + cls;
-    wrapper.style.left     = left + 'px';
-    wrapper.style.top      = top  + 'px';
-    wrapper.style.width    = w + 'px';
-    wrapper.style.height   = h + 'px';
-    wrapper.style.overflow = 'hidden';
-    wrapper.style.background = 'none';
-
-    const inner = document.createElement('div');
-    inner.style.position = 'absolute';
-    inner.style.right = '0';
-    inner.style.top = '0';
-    inner.style.width = fullW + 'px';
-    inner.style.height = h + 'px';
-    inner.style.display = 'grid';
-    inner.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-    inner.style.placeItems = 'center';
-
-    for (let i = 0; i < count; i++) {
-      inner.appendChild(makeBlockEl(blockType));
-    }
-    wrapper.appendChild(inner);
-    return wrapper;
-  };
-
   if (sweepState === 'sweeping-ot') {
     const fillLeft = sweepX2; const fillW = (A.total * C) - fillLeft;
-    const fillTop = 0; const fillH = B.tens * C;
-    if (fillW > 0 && fillH > 0) az.appendChild(makeBlockWrapper('ot', fillLeft, fillTop, fillW, fillH, 'ten-bar-v', A.ones * B.T, A.ones, A.ones * C)); 
+    if (fillW > 0 && B.tens * C > 0) az.appendChild(makeBlockWrapper('ot', fillLeft, 0, fillW, B.tens * C, 'ten-bar-v', A.ones * B.T, A.ones, A.ones * C)); 
   }
   if (sweepState === 'sweeping-tt') {
     const fillLeft = sweepX2; const fillW = (A.tens * C) - fillLeft;
-    const fillTop = 0; const fillH = B.tens * C;
-    if (fillW > 0 && fillH > 0) az.appendChild(makeBlockWrapper('tt', fillLeft, fillTop, fillW, fillH, 'hundred-flat', A.T * B.T, A.T, A.T * C));
+    if (fillW > 0 && B.tens * C > 0) az.appendChild(makeBlockWrapper('tt', fillLeft, 0, fillW, B.tens * C, 'hundred-flat', A.T * B.T, A.T, A.T * C));
   }
 }
 
@@ -1289,9 +1172,6 @@ function makeHarvestFill(cls, x, y, w, h, val, C, cols) {
   el.className = 'harvest-fill ' + cls;
   el.style.left   = x + 'px'; el.style.top = y + 'px';
   el.style.width  = w + 'px'; el.style.height = h + 'px';
-  el.style.display = 'grid';
-  el.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-  el.style.placeItems = 'center';
   el.style.background = 'none';
 
   let blockType, blockCount;
@@ -1300,11 +1180,24 @@ function makeHarvestFill(cls, x, y, w, h, val, C, cols) {
   else if (cls.includes('ot')) { blockType = 'ten-bar-v'; blockCount = Math.floor(val/10); }
   else if (cls.includes('tt')) { blockType = 'hundred-flat'; blockCount = Math.floor(val/100); }
 
-  for (let i = 0; i < blockCount; i++) el.appendChild(makeBlockEl(blockType));
+  const rows = Math.ceil(blockCount / cols);
+  const bW = w / cols;
+  const bH = h / rows;
+
+  let ix = 0, iy = 0;
+  for (let i = 0; i < blockCount; i++) {
+      const b = makeBlockEl(blockType);
+      b.style.position = 'absolute';
+      b.style.left = (ix * bW + bW/2) + 'px';
+      b.style.top = (iy * bH + bH/2) + 'px';
+      b.style.transform = 'translate(-50%, -50%) rotateX(10deg)';
+      el.appendChild(b);
+      ix++;
+      if (ix >= cols) { ix = 0; iy++; }
+  }
   return el;
 }
 
-// Dynamically scale ghosts on demand
 function renderGhosts(C, A, B) {
   document.querySelectorAll('.quad-ghost').forEach(e => e.remove());
   const az = document.getElementById('arrayZone');
@@ -1493,7 +1386,6 @@ function checkOverflows() {
 
     if (count >= 10) {
       anyOverflow = true;
-      // STRICT PEDAGOGY: Highlight ONLY the bottom-most complete row (first 10 blocks)
       for (let i = 0; i < 10; i++) {
         if (blocks[i]) blocks[i].classList.add('ready-to-fuse');
       }
@@ -1522,7 +1414,7 @@ function checkOverflows() {
     document.getElementById('dashDrawer').classList.add('open');
   }
 }
-  
+
 function checkDrawerRetract() {
     if (binOnes === 0 && binTens === 0 && binHundreds === 0 && binThousands === 0) {
         document.getElementById('dashDrawer').classList.remove('open');
@@ -1530,15 +1422,17 @@ function checkDrawerRetract() {
 }
 
 function startSumPhase() {
-    sweepState = 'sum-phase';
+    sweepState = 'sum-ones';
     document.getElementById('sumLine').classList.add('lit');
     document.getElementById('totalRow').classList.add('lit');
-    document.getElementById('pp1').classList.remove('lit');
-    document.getElementById('pp2').classList.remove('lit');
     checkDrawerRetract();
+    
+    const sq2 = document.getElementById('sq-tens');
+    if(sq2) sq2.style.display = 'none';
+    
+    document.getElementById('t_O').classList.add('sum-pulse');
 }
 
-// CAPTURE ORIGIN RECT FOR PHYSICAL ILLUSION
 function triggerRegroup(binEl, binType, rowBlocks) {
   let toEl, carryClass;
   if (binType === 'ones') {
@@ -1552,11 +1446,10 @@ function triggerRegroup(binEl, binType, rowBlocks) {
     binHundreds -= 10; toEl = document.getElementById('binTh'); binThousands += 1; carryClass = 'thousand-cube';
   } else return;
 
-  // Instead of an immediate rebuild, visually hide the specific blocks to reserve space during slide
   if (rowBlocks && rowBlocks.length === 10) {
-      rowBlocks.forEach(b => { b.style.visibility = 'hidden'; b.classList.remove('ready-to-fuse'); });
+      rowBlocks.forEach(b => { b.style.opacity = '0'; b.classList.remove('ready-to-fuse'); });
   } else {
-      rebuildBinDOM(binEl, binType); // Fallback
+      rebuildBinDOM(binEl, binType);
   }
 
   let startX, startY;
@@ -1579,6 +1472,7 @@ function triggerRegroup(binEl, binType, rowBlocks) {
 
   const carry = document.createElement('div');
   carry.className = `carry-fly ${carryClass}`;
+  
   if (carryClass === 'hundred-flat') {
     for (let s = 0; s < 100; s++) { const seg = document.createElement('div'); seg.className = 'hund-seg'; carry.appendChild(seg); }
   }
@@ -1591,22 +1485,18 @@ function triggerRegroup(binEl, binType, rowBlocks) {
   document.body.appendChild(carry);
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    // Step 1: Slide horizontally IN THE SAME ROW
     const targetX = toRect.left + toRect.width/2 - halfW;
     const targetY = toRect.top + toRect.height/2 - halfH;
 
-    carry.style.transition = `left 280ms cubic-bezier(0.4, 0, 0.2, 1)`;
+    carry.style.transition = `left 300ms cubic-bezier(0.34, 1.56, 0.64, 1)`;
     carry.style.left = targetX + 'px';
 
     setTimeout(() => {
-      // Step 2: Drop into the bin
-      carry.style.transition = `top 300ms var(--spring)`;
+      carry.style.transition = `top 300ms cubic-bezier(0.34, 1.56, 0.64, 1)`;
       carry.style.top = targetY + 'px';
 
       setTimeout(() => {
         carry.remove();
-        
-        // NOW we remove the hidden red blocks and drop the blue block into the DOM
         rebuildBinDOM(binEl, binType);
         const block = makeBlockEl(carryClass);
         block.classList.add('block-settle');
@@ -1618,8 +1508,8 @@ function triggerRegroup(binEl, binType, rowBlocks) {
         setTimeout(() => toEl.classList.remove('accepting'), 360);
         updateBinCounts();
         checkOverflows();
-      }, 320); // wait for drop
-    }, 300); // wait for slide
+      }, 320); 
+    }, 350); 
   }));
 }
 
@@ -1660,6 +1550,13 @@ function _popAD(id, val, col) {
   _prev[id]=s; el.textContent=s; el.className='ad '+col;
   if (s!=='') { el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),400); }
 }
+function _popTD(id, val) {
+  const el = document.getElementById(id); if (!el) return;
+  const s = val===''||val===null?'':String(val);
+  if (_prev[id]===s) return;
+  _prev[id]=s; el.textContent=s; el.className='td';
+  if (s!=='') { el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),500); }
+}
 
 function buildBanks() {
   const bT = document.getElementById('bankTop'), bR = document.getElementById('bankRight');
@@ -1676,7 +1573,6 @@ function makeSrc(kind, axis) {
   return el;
 }
 
-// BINS CLICK LOGIC (Capture Exact Row Array!)
 document.getElementById('binO').addEventListener('click', e => {
   if (binOnes >= 10 && !sweepState.includes('record-ones')) {
     const tgt = e.target.closest('.ready-to-fuse');
@@ -1729,7 +1625,7 @@ document.getElementById('binT').addEventListener('click', e => {
     if (binHundreds > 0) {
       sweepState = 'record-hundreds-to'; document.getElementById('binH').classList.add('record-pulse');
     } else {
-      sweepState = 'phase-1-done'; startPhase2();
+      sweepState = 'phase-1-done'; triggerZeroLock();
     }
   }
   else if (sweepState === 'record-tens-ot') {
@@ -1762,7 +1658,7 @@ document.getElementById('binH').addEventListener('click', e => {
     document.getElementById('binH').classList.remove('record-pulse');
     _popAD('p1_H', binHundreds, 'h'); 
     binHundreds = 0; rebuildBinDOM(document.getElementById('binH'), 'hundreds'); updateBinCounts(); checkDrawerRetract();
-    sweepState = 'phase-1-done'; startPhase2();
+    sweepState = 'phase-1-done'; triggerZeroLock();
   }
   else if (sweepState === 'record-carry-ot') {
     document.getElementById('binH').classList.remove('record-pulse');
@@ -1794,6 +1690,36 @@ document.getElementById('binTh').addEventListener('click', () => {
   }
 });
 
+// Final Guided Sum Logic
+const sumCells = ['t_O', 't_T', 't_H', 't_TH'];
+const sumStates = ['sum-ones', 'sum-tens', 'sum-hundreds', 'sum-thousands'];
+sumCells.forEach((id, idx) => {
+    document.getElementById(id).addEventListener('click', function() {
+        if (sweepState === sumStates[idx]) {
+            this.classList.remove('sum-pulse');
+            const A = factorA(), B = factorB();
+            const total = A.total * B.total;
+            
+            let val;
+            if (idx === 0) val = total % 10;
+            else if (idx === 1) val = Math.floor(total / 10) % 10;
+            else if (idx === 2) val = Math.floor(total / 100) % 10;
+            else if (idx === 3) val = Math.floor(total / 1000) % 10;
+            
+            if (val > 0 || idx === 0 || total >= Math.pow(10, idx)) {
+                _popTD(id, val); 
+            }
+            
+            if (idx < 3 && total >= Math.pow(10, idx+1)) {
+                sweepState = sumStates[idx+1];
+                document.getElementById(sumCells[idx+1]).classList.add('sum-pulse');
+            } else {
+                sweepState = 'done';
+            }
+        }
+    });
+});
+
 document.getElementById('gCanvas').addEventListener('dblclick', e => {
   const tgt = e.target;
   const canvas = document.getElementById('gCanvas');
@@ -1804,17 +1730,31 @@ document.getElementById('gCanvas').addEventListener('dblclick', e => {
     sweepState='idle'; sweepX=0; sweepX2=0;
     binOnes=0; binTens=0; binHundreds=0; binThousands=0;
     Object.keys(_prev).forEach(k=>delete _prev[k]);
-    ['c_H', 'c_T', 'c_O', 'p1_TH', 'p1_H', 'p1_T', 'p1_O', 'p2_TH', 'p2_H', 'p2_T', 'p2_0', 't_TH', 't_H', 't_T', 't_O'].forEach(id => {
+    
+    ['c_H', 'c_T', 'c_O', 'p1_TH', 'p1_H', 'p1_T', 'p1_O', 'p2_TH', 'p2_H', 'p2_T', 'p2_0'].forEach(id => {
       const el = document.getElementById(id);
       if (el) { el.textContent = ''; el.className = 'ad ' + (id.includes('_T') ? 't' : id.includes('_H') ? 'h' : 'o'); }
     });
+    
+    ['t_TH', 't_H', 't_T', 't_O'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = ''; el.className = 'td'; el.classList.remove('sum-pulse'); }
+    });
+
     document.querySelectorAll('.squeegee,.sweep-fill,.harvest-fill,.quad-ghost,.block-fly,.carry-fly').forEach(e=>e.remove());
     ['binO','binT','binH','binTh'].forEach(id => {
       const el = document.getElementById(id);
       if(el) { el.querySelectorAll('.cube,.ten-bar,.ten-bar-v,.hundred-flat,.thousand-cube').forEach(e=>e.remove()); el.classList.remove('accepting', 'record-pulse'); }
     });
+    
     document.getElementById('algLock').classList.remove('active');
     document.getElementById('dashDrawer').classList.remove('open');
+    document.getElementById('dashDrawer').style.setProperty('--tray-shift', '0px');
+    document.getElementById('p2_0').classList.remove('zero-pulse');
+    document.getElementById('p2_0').style.opacity = '1';
+    document.getElementById('sumLine').classList.remove('lit');
+    document.getElementById('totalRow').classList.remove('lit');
+
     updateBinCounts();
     layout();
   }
