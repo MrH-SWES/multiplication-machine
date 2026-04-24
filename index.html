@@ -319,6 +319,13 @@
     }
     @keyframes recPulse { 0% { transform: scale(1); } 100% { transform: scale(1.03); } }
 
+    .bin.hundreds-bin.record-pulse {
+      border-color: var(--hundreds) !important;
+      box-shadow: 0 0 15px 4px rgba(255, 215, 0, 0.35) !important;
+      cursor: pointer;
+      animation: recPulse 1s ease-in-out infinite alternate;
+    }
+
     /* ══════════════════════════════════════
        DASHBOARD FLOOR
     ══════════════════════════════════════ */
@@ -568,6 +575,7 @@
     .ad { width:30px; height:42px; text-align:center; line-height:42px; font-size:2.3rem; font-weight:800; letter-spacing:-0.04em; border-radius:8px; }
     .ad.t   { color:var(--tens); }
     .ad.o   { color:var(--ones); }
+    .ad.h { color: var(--hundreds); }
     .ad.pop { animation:dPop .35s var(--spring) both; }
     @keyframes dPop { 0% { transform:scale(.5) translateY(8px); opacity:0; } 100% { transform:scale(1)  translateY(0);   opacity:1; } }
     .alg-line { height:2.5px; background:var(--text-main); width:100%; border-radius:2px; margin:5px 0 4px; }
@@ -974,7 +982,7 @@ function placeSqueegee(C, R, A, B) {
   const sqLeft = sweepX - 3; 
   sq.style.left = sqLeft + 'px';
 
-  const locked = sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo';
+  const locked = sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo' || sweepState === 'regrouping-to' || sweepState === 'record-tens-to' || sweepState === 'record-hundreds-to' || sweepState === 'phase-1-done';
   sq.classList.toggle('locked', locked);
   sq.classList.toggle('pulsing',
     sweepState === 'ready' || sweepState === 'harvested-oo'
@@ -989,7 +997,7 @@ function initSqueegeDrag(sq) {
     const A = factorA();
     if (!A.total) return;
     // STRICT LOCK
-    if (sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo' || sweepState === 'stopped-to') return; 
+    if (sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo' || sweepState === 'stopped-to' || sweepState === 'regrouping-to' || sweepState === 'record-tens-to' || sweepState === 'record-hundreds-to' || sweepState === 'phase-1-done') return; 
 
     dragging = true;
     startClientX = clientX;
@@ -1001,7 +1009,7 @@ function initSqueegeDrag(sq) {
   const onMove = (clientX) => {
     if (!dragging) return;
     // STRICT LOCK
-    if (sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo' || sweepState === 'stopped-to') {
+    if (sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo' || sweepState === 'stopped-to' || sweepState === 'regrouping-to' || sweepState === 'record-tens-to' || sweepState === 'record-hundreds-to' || sweepState === 'phase-1-done') {
       dragging = false; sq.style.cursor = ''; return;
     }
 
@@ -1207,9 +1215,14 @@ function harvestQuadrant(cls, val, A, B, C) {
       // No tens factor; recording phase will still run, then squeegee is done
     }
   } else if (cls === 'to') {
-    sweepState = 'done';
+    sweepState = 'regrouping-to';
     const sq = document.getElementById('sq-ones');
-    if (sq) { sq.classList.remove('pulsing','locked'); sq.style.opacity='.25'; sq.style.pointerEvents='none'; }
+    if (sq) { 
+        sq.classList.remove('pulsing'); 
+        sq.classList.add('locked'); 
+        sq.style.opacity = '.25'; 
+        sq.style.pointerEvents = 'none'; 
+    }
   }
 
   renderSweepFill(C, A, B);
@@ -1334,6 +1347,9 @@ function checkOverflows() {
   if (sweepState === 'regrouping-oo' && !anyOverflow) {
     sweepState = 'record-ones-oo';
     document.getElementById('binO').classList.add('record-pulse');
+  } else if (sweepState === 'regrouping-to' && !anyOverflow) {
+    sweepState = 'record-tens-to';
+    document.getElementById('binT').classList.add('record-pulse');
   }
 }
 
@@ -1518,18 +1534,44 @@ document.getElementById('binO').addEventListener('click', () => {
   }
 });
 document.getElementById('binT').addEventListener('click', () => {
-  if (binTens >= 10 && sweepState !== 'record-carry-oo') triggerRegroup(document.getElementById('binT'), 'tens');
+  if (binTens >= 10 && sweepState !== 'record-carry-oo' && sweepState !== 'record-tens-to') {
+    triggerRegroup(document.getElementById('binT'), 'tens');
+  }
   else if (sweepState === 'record-carry-oo') {
     document.getElementById('binT').classList.remove('record-pulse');
-    _popCD('c_T', binTens); // Record carry above factors
+    _popAD('c_T', binTens, 't'); // Record carry
+    binTens = 0; rebuildBinDOM(document.getElementById('binT'), 'tens'); updateBinCounts();
     
-    // Carry recorded, unlock squeegee
     sweepState = 'harvested-oo';
     const sq = document.getElementById('sq-ones');
     if (sq) { sq.classList.remove('locked'); sq.style.pointerEvents = 'auto'; sq.classList.add('pulsing'); }
   }
+  else if (sweepState === 'record-tens-to') {
+    document.getElementById('binT').classList.remove('record-pulse');
+    _popAD('p1_T', binTens, 't'); // Record partial product tens
+    binTens = 0; rebuildBinDOM(document.getElementById('binT'), 'tens'); updateBinCounts();
+    
+    if (binHundreds > 0) {
+      sweepState = 'record-hundreds-to';
+      document.getElementById('binH').classList.add('record-pulse');
+    } else {
+      sweepState = 'phase-1-done'; // Ready for Factor B Tens Sweep!
+    }
+  }
 });
-document.getElementById('binH').addEventListener('click', () => {});
+
+document.getElementById('binH').addEventListener('click', () => {
+  if (binHundreds >= 10 && sweepState !== 'record-hundreds-to') {
+    if (typeof triggerRegroup === 'function') triggerRegroup(document.getElementById('binH'), 'hundreds');
+  }
+  else if (sweepState === 'record-hundreds-to') {
+    document.getElementById('binH').classList.remove('record-pulse');
+    _popAD('p1_H', binHundreds, 'h'); // Record partial product hundreds (Gold)
+    binHundreds = 0; rebuildBinDOM(document.getElementById('binH'), 'hundreds'); updateBinCounts();
+    
+    sweepState = 'phase-1-done'; // Ready for Factor B Tens Sweep!
+  }
+});
 
 document.getElementById('gCanvas').addEventListener('dblclick', e => {
   const tgt = e.target;
