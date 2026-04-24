@@ -311,9 +311,17 @@
       50%     { opacity: .7; }
     }
 
-    .bin.record-pulse {
-      border-color: var(--accent) !important;
-      box-shadow: 0 0 15px 4px rgba(0, 122, 255, 0.3) !important;
+    /* Ones Record Pulse (Red) */
+    .bin.ones-bin.record-pulse {
+      border-color: var(--ones) !important;
+      box-shadow: 0 0 15px 4px rgba(220, 20, 60, 0.35) !important;
+      cursor: pointer;
+      animation: recPulse 1s ease-in-out infinite alternate;
+    }
+    /* Tens Record Pulse (Blue) */
+    .bin.tens-bin.record-pulse {
+      border-color: var(--tens) !important;
+      box-shadow: 0 0 15px 4px rgba(65, 105, 225, 0.35) !important;
       cursor: pointer;
       animation: recPulse 1s ease-in-out infinite alternate;
     }
@@ -348,21 +356,34 @@
       color: var(--text-light);
     }
     .bin {
-      min-width: auto;
-      width: fit-content;
       min-height: 120px;
       border-radius: 8px;
       border: 2.5px dashed rgba(0,0,0,.12);
-      display: grid;
-      grid-template-columns: repeat(10, var(--cube-base));
-      grid-auto-rows: var(--cube-base);
-      gap: 1px;
-      align-content: end; /* Gravity: stack from the bottom up */
       padding: 8px;
       transition: border-color .2s;
       position: relative;
       transform-style: preserve-3d;
+      /* Base Flexbox */
+      display: flex;
+      gap: 1px;
     }
+    
+    /* Wrap-reverse builds rows from the bottom up */
+    .bin.ones-bin, .bin.hundreds-bin { 
+      flex-wrap: wrap-reverse; 
+      align-content: flex-start;
+      /* Force exactly 10 blocks per row: 10 cubes + 9 gaps (1px each) + 16px padding */
+      width: calc((var(--cube-base) * 10) + 25px); 
+    }
+    
+    /* Column-reverse stacks horizontal sticks cleanly like a ladder */
+    .bin.tens-bin { 
+      flex-direction: column-reverse; 
+      align-items: center; 
+      justify-content: flex-start;
+      min-width: calc((var(--cube-base) * 10) + 25px); /* 10 cubes + 9 gaps (1px each) + 16px padding */ 
+    }
+
     .bin.thousands-bin { border-color: rgba(76, 187, 23, 0.35); }
     .bin.hundreds-bin { border-color: rgba(255, 215, 0, 0.45); }
     .bin.tens-bin     { border-color: rgba(65,105,225,.35); }
@@ -1506,11 +1527,15 @@ document.getElementById('binO').addEventListener('click', () => {
     _popAD('p1_O', binOnes, 'o'); // Record ones in algorithm
     document.getElementById('pp1').classList.add('lit');
     
+    // VAPORIZE THE RECORDED ONES
+    binOnes = 0;
+    rebuildBinDOM(document.getElementById('binO'), 'ones');
+    updateBinCounts();
+    
     if (binTens > 0) {
       sweepState = 'record-carry-oo';
       document.getElementById('binT').classList.add('record-pulse');
     } else {
-      // No carry, unlock squeegee
       sweepState = 'harvested-oo';
       const sq = document.getElementById('sq-ones');
       if (sq) { sq.classList.remove('locked'); sq.style.pointerEvents = 'auto'; sq.classList.add('pulsing'); }
@@ -1522,6 +1547,11 @@ document.getElementById('binT').addEventListener('click', () => {
   else if (sweepState === 'record-carry-oo') {
     document.getElementById('binT').classList.remove('record-pulse');
     _popCD('c_T', binTens); // Record carry above factors
+    
+    // VAPORIZE THE RECORDED CARRY TENS
+    binTens = 0;
+    rebuildBinDOM(document.getElementById('binT'), 'tens');
+    updateBinCounts();
     
     // Carry recorded, unlock squeegee
     sweepState = 'harvested-oo';
