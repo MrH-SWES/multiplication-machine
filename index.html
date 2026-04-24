@@ -560,6 +560,9 @@
     }
 
     .alg-problem { width: 100%; display: flex; flex-direction: column; align-items: flex-end; gap: 1px; margin-bottom: 4px; }
+    .carry-row { display:flex; justify-content:flex-end; gap:0; min-height:24px; }
+    .cd { width:30px; height:24px; text-align:center; line-height:24px; font-size:1.3rem; font-weight:800; letter-spacing:-0.04em; color:var(--tens); border-radius:5px; }
+    .cd.pop { animation:dPop .35s var(--spring) both; }
     .alg-row { display:flex; align-items:baseline; gap:0; }
     .alg-sym { font-size:1.9rem; font-weight:900; color:var(--text-light); line-height:42px; margin-right:2px; }
     .ad { width:30px; height:42px; text-align:center; line-height:42px; font-size:2.3rem; font-weight:800; letter-spacing:-0.04em; border-radius:8px; }
@@ -642,6 +645,10 @@
       <div class="alg-lock-icon">🔒</div>
     </div>
     <div class="alg-problem">
+      <div class="carry-row" id="carryRow">
+        <div class="cd" id="c_T"></div>
+        <div class="cd" id="c_O"></div>
+      </div>
       <div class="alg-row">
         <div class="ad t" id="aA_T"></div>
         <div class="ad o" id="aA_O"></div>
@@ -967,7 +974,7 @@ function placeSqueegee(C, R, A, B) {
   const sqLeft = sweepX - 3; 
   sq.style.left = sqLeft + 'px';
 
-  const locked = (sweepState === 'stopped-oo');
+  const locked = sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo';
   sq.classList.toggle('locked', locked);
   sq.classList.toggle('pulsing',
     sweepState === 'ready' || sweepState === 'harvested-oo'
@@ -1454,6 +1461,17 @@ function _popAD(id, val, col) {
   if (s!=='') { el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),400); }
 }
 
+function _popCD(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const s = val===''||val===null?'':String(val);
+  if (_prev[id]===s) return;
+  _prev[id]=s;
+  el.textContent=s;
+  el.className='cd';
+  if (s!=='') { el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),400); }
+}
+
 function buildBanks() {
   const bT = document.getElementById('bankTop');
   const bR = document.getElementById('bankRight');
@@ -1503,7 +1521,7 @@ document.getElementById('binT').addEventListener('click', () => {
   if (binTens >= 10 && sweepState !== 'record-carry-oo') triggerRegroup(document.getElementById('binT'), 'tens');
   else if (sweepState === 'record-carry-oo') {
     document.getElementById('binT').classList.remove('record-pulse');
-    _popAD('p1_T', binTens, 't'); // Record carry in algorithm
+    _popCD('c_T', binTens); // Record carry above factors
     
     // Carry recorded, unlock squeegee
     sweepState = 'harvested-oo';
@@ -1529,6 +1547,7 @@ document.getElementById('gCanvas').addEventListener('dblclick', e => {
       document.getElementById(id).classList.remove('accepting', 'record-pulse');
     });
     document.getElementById('algLock').classList.remove('active');
+    ['c_T','c_O'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = ''; });
     updateBinCounts();
     layout();
   }
