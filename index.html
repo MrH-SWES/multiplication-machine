@@ -126,7 +126,7 @@
       scrollbar-color: rgba(0,0,0,.12) transparent;
       background: var(--bg);
       position: relative;
-      padding: 32px;
+      padding: 16px;
     }
     .grid-scroller::-webkit-scrollbar { width:6px; height:6px; }
     .grid-scroller::-webkit-scrollbar-thumb { background:rgba(0,0,0,.12); border-radius:3px; }
@@ -190,7 +190,7 @@
 
     /* --- STATIC SOURCE BLOCKS (Banks - Do Not Zoom) --- */
     .src-ten-h {
-        width: calc(var(--src-cell) * 10); height: var(--src-cube-base);
+        width: calc(var(--cell) * 10); height: var(--src-cube-base);
         background: var(--tens-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
         border-radius: 6px; display: flex; flex-direction: row; flex-shrink: 0;
     }
@@ -200,7 +200,7 @@
         border-radius: 6px; flex-shrink: 0;
     }
     .src-ten-v {
-        width: var(--src-cube-base); height: calc(var(--src-cell) * 10);
+        width: var(--src-cube-base); height: calc(var(--cell) * 10);
         background: var(--tens-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
         border-radius: 6px; display: flex; flex-direction: column; flex-shrink: 0;
     }
@@ -313,7 +313,7 @@
        DASHBOARD FLOOR & BINS
     ══════════════════════════════════════ */
     .dashboard-floor {
-      height: 160px;
+      height: 130px;
       flex-shrink: 0;
       background: var(--surface);
       border-top: 1.5px solid var(--border);
@@ -321,7 +321,7 @@
       align-items: center;
       justify-content: center;
       gap: 20px;
-      padding: 0 28px;
+      padding: 0 16px;
     }
 
     .bin-group {
@@ -338,7 +338,7 @@
       color: var(--text-light);
     }
     .bin {
-      min-height: 120px;
+      min-height: 90px;
       border-radius: 8px;
       border: 2.5px dashed rgba(0,0,0,.12);
       padding: 8px;
@@ -488,7 +488,7 @@
                   0 4px 10px rgba(0,0,0,.35);
     }
     .block-fly.ten-bar {
-      width: calc(var(--cube-base) * 10);
+      width: calc(var(--cell) * 10);
       height: var(--cube-base);
       background: var(--tens-front);
       border-radius: 3px;
@@ -496,8 +496,8 @@
                   0 4px 10px rgba(0,0,0,.35);
     }
     .block-fly.hundred-flat {
-      width: calc(var(--cube-base) * 10);
-      height: calc(var(--cube-base) * 10);
+      width: calc(var(--cell) * 10);
+      height: calc(var(--cell) * 10);
       background: var(--hund-front);
       border-radius: 3px;
       box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 0 var(--hund-side),
@@ -530,15 +530,15 @@
       border-radius: 3px;
     }
     .carry-fly.ten-bar {
-      width: calc(var(--cube-base) * 10);
+      width: calc(var(--cell) * 10);
       height: var(--cube-base);
       background: var(--tens-front);
       box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 0 var(--tens-side),
                   0 6px 18px rgba(0,0,0,.4);
     }
     .carry-fly.hundred-flat {
-      width: calc(var(--cube-base) * 10);
-      height: calc(var(--cube-base) * 10);
+      width: calc(var(--cell) * 10);
+      height: calc(var(--cell) * 10);
       background: var(--hund-front);
       box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 0 var(--hund-side),
                   0 6px 18px rgba(0,0,0,.4);
@@ -596,7 +596,7 @@
        ALGORITHM PANEL
     ══════════════════════════════════════ */
     .alg-panel {
-      width: 200px;
+      width: 170px;
       flex-shrink: 0;
       background: var(--glass);
       backdrop-filter: blur(24px);
@@ -605,7 +605,7 @@
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      padding: 32px 20px 24px;
+      padding: 24px 16px;
       overflow-y: auto;
     }
 
@@ -789,12 +789,12 @@ function triggerAutoZoom() {
   const A = factorA(), B = factorB();
   if (!A.total && !B.total) return;
 
-  const algPanelW   = 200;
+  const algPanelW   = 170;
   const bankTopH    = 60;
   const bankRightW  = 60;
-  const dashFloorH  = 160;
+  const dashFloorH  = 130;
   const scrollbarM  = 16;
-  const PADDING_OFFSET = 64; 
+  const PADDING_OFFSET = 32;
   const CELL_BASE   = 36;
   const RAIL_BASE   = CELL_BASE; 
 
@@ -1289,9 +1289,10 @@ function makeBlockEl(type) {
 function getBlockSize(type) {
   const style = getComputedStyle(document.documentElement);
   const cubeBase = parseFloat(style.getPropertyValue('--cube-base')) || 14;
+  const cell = parseFloat(style.getPropertyValue('--cell')) || 14;
   if (type === 'cube')         return { w: cubeBase,      h: cubeBase };
-  if (type === 'ten-bar')      return { w: cubeBase * 10, h: cubeBase };
-  if (type === 'hundred-flat') return { w: cubeBase * 10, h: cubeBase * 10 };
+  if (type === 'ten-bar')      return { w: cell * 10, h: cubeBase };
+  if (type === 'hundred-flat') return { w: cell * 10, h: cell * 10 };
   if (type === 'thousand-cube')return { w: cubeBase * 10, h: cubeBase * 10 };
   return { w: 14, h: 14 };
 }
