@@ -1591,11 +1591,6 @@ document.getElementById('binT').addEventListener('click', () => {
     document.getElementById('binT').classList.remove('record-pulse');
     _popAD('c_T', binTens, 't'); // Record carry
     
-    // VAPORIZE THE RECORDED CARRY TENS
-    binTens = 0;
-    rebuildBinDOM(document.getElementById('binT'), 'tens');
-    updateBinCounts();
-    
     sweepState = 'harvested-oo';
     const sq = document.getElementById('sq-ones');
     if (sq) { sq.classList.remove('locked'); sq.style.pointerEvents = 'auto'; sq.classList.add('pulsing'); }
