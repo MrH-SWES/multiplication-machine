@@ -127,6 +127,10 @@
       background: var(--bg);
       position: relative;
       padding: 16px;
+      /* Bulletproof Canvas Centering */
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
     }
     .grid-scroller::-webkit-scrollbar { width:6px; height:6px; }
     .grid-scroller::-webkit-scrollbar-thumb { background:rgba(0,0,0,.12); border-radius:3px; }
@@ -151,7 +155,6 @@
       border: 1px solid rgba(0,0,0,0.08);
       border-radius: 12px;
       box-shadow: 0 12px 32px rgba(0,0,0,0.05);
-      margin: 0 auto; /* CENTER ARRAY HORIZONTALLY */
       flex-shrink: 0;
     }
 
@@ -192,7 +195,7 @@
 
     /* --- STATIC SOURCE BLOCKS (Banks - Do Not Zoom) --- */
     .src-ten-h {
-        width: calc(var(--cell) * 10); height: var(--src-cube-base);
+        width: calc(var(--src-cell) * 10); height: var(--src-cube-base);
         background: var(--tens-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
         border-radius: 6px; display: flex; flex-direction: row; flex-shrink: 0;
     }
@@ -202,7 +205,7 @@
         border-radius: 6px; flex-shrink: 0;
     }
     .src-ten-v {
-        width: var(--src-cube-base); height: calc(var(--cell) * 10);
+        width: var(--src-cube-base); height: calc(var(--src-cell) * 10);
         background: var(--tens-front); transform: rotateX(10deg); box-shadow: var(--shadow-block);
         border-radius: 6px; display: flex; flex-direction: column; flex-shrink: 0;
     }
@@ -1227,3 +1230,514 @@ function showHarvestFill(C, A, B) {
     const val = A.tens * B.ones;
     if (w > 0 && h > 0) {
       const hf = makeHarvestFill('to', x, y, w, h, val, C, A.T);
+      az.appendChild(hf);
+      hf.addEventListener('click', () => harvestQuadrant('to', val, A, B, C));
+    }
+  }
+}
+
+function makeHarvestFill(cls, x, y, w, h, val, C, cols) {
+  const el = document.createElement('div');
+  el.className = 'harvest-fill ' + cls;
+  el.style.left   = x + 'px';
+  el.style.top    = y + 'px';
+  el.style.width  = w + 'px';
+  el.style.height = h + 'px';
+  el.style.display = 'grid';
+  el.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  el.style.placeItems = 'center';
+  el.style.background = 'none';
+
+  const blockType  = cls === 'oo' ? 'cube' : 'ten-bar';
+  const blockCount = cls === 'oo' ? val : Math.floor(val / 10);
+  for (let i = 0; i < blockCount; i++) {
+    el.appendChild(makeBlockEl(blockType));
+  }
+  return el;
+}
+
+// Dynamically scale ghosts on demand
+function renderGhosts(C, A, B) {
+  document.querySelectorAll('.quad-ghost').forEach(e => e.remove());
+  const az = document.getElementById('arrayZone');
+  
+  activeGhosts.forEach(g => {
+    let qx, qy, qw, qh;
+    if (g.cls === 'oo') {
+      qx = A.tens * C; qy = B.tens * C; qw = A.ones * C; qh = B.ones * C;
+    } else if (g.cls === 'to') {
+      qx = 0; qy = B.tens * C; qw = A.tens * C; qh = B.ones * C;
+    }
+    const ghost = document.createElement('div');
+    ghost.className = 'quad-ghost ' + g.cls;
+    ghost.style.left = qx + 'px'; 
+    ghost.style.top = qy + 'px';
+    ghost.style.width = qw + 'px'; 
+    ghost.style.height = qh + 'px';
+    ghost.style.fontSize = Math.min(C * 0.85, 44) + 'px';
+    ghost.textContent = g.val;
+    az.appendChild(ghost);
+  });
+}
+
+function harvestQuadrant(cls, val, A, B, C) {
+  document.querySelectorAll('.harvest-fill').forEach(e=>e.remove());
+
+  const az = document.getElementById('arrayZone');
+
+  let qx,qy,qw,qh;
+  if (cls === 'oo') {
+    qx = A.tens*C; qy = B.tens*C;
+    qw = A.ones*C; qh = B.ones*C;
+  } else {
+    qx = 0; qy = B.tens*C;
+    qw = A.tens*C; qh = B.ones*C;
+  }
+
+  const azRect = az.getBoundingClientRect();
+  const originX = azRect.left + qx + (qw / 2);
+  const originY = azRect.top + qy + (qh / 2);
+
+  // Store data-driven ghost instead of manual DOM node
+  activeGhosts.push({ cls, val });
+  renderGhosts(C, A, B);
+
+  const blockType = (cls === 'oo') ? 'cube' : 'ten-bar';
+  const binType   = (cls === 'oo') ? 'ones' : 'tens';
+
+  const blockCount = (cls === 'oo') ? (A.O * B.O) : (A.T * B.O);
+  spawnBlocks(blockType, blockCount, binType, originX, originY);
+
+  if (cls === 'oo') {
+    sweepState = 'regrouping-oo';
+    const sq = document.getElementById('sq-ones');
+    if (sq) {
+      sq.classList.add('locked');
+      sq.style.pointerEvents = 'none';
+      sq.classList.remove('pulsing');
+    }
+  } else if (cls === 'to') {
+    sweepState = 'regrouping-to';
+    const sq = document.getElementById('sq-ones');
+    if (sq) { 
+        sq.classList.remove('pulsing'); 
+        sq.classList.add('locked'); 
+        sq.style.opacity = '.25'; 
+        sq.style.pointerEvents = 'none'; 
+    }
+  }
+
+  renderSweepFill(C, A, B);
+}
+
+function makeBlockEl(type) {
+  const el = document.createElement('div');
+  el.className = type;
+  if (type === 'hundred-flat') {
+    for (let s = 0; s < 100; s++) {
+      const seg = document.createElement('div');
+      seg.className = 'hund-seg';
+      el.appendChild(seg);
+    }
+  }
+  return el;
+}
+
+function getBlockSize(type) {
+  const style = getComputedStyle(document.documentElement);
+  const cubeBase = parseFloat(style.getPropertyValue('--cube-base')) || 14;
+  const cell = parseFloat(style.getPropertyValue('--cell')) || 14;
+  if (type === 'cube')         return { w: cubeBase,      h: cubeBase };
+  if (type === 'ten-bar')      return { w: cell * 10,     h: cubeBase };
+  if (type === 'hundred-flat') return { w: cell * 10,     h: cell * 10 };
+  if (type === 'thousand-cube')return { w: cubeBase * 10, h: cubeBase * 10 };
+  return { w: 14, h: 14 };
+}
+
+function spawnBlocks(type, count, binType, originX, originY) {
+  const binEl = binType==='ones'  ? document.getElementById('binO')
+              : binType==='tens'  ? document.getElementById('binT')
+              :                     document.getElementById('binH');
+
+  if (binType==='ones')         binOnes     += count;
+  else if (binType==='tens')    binTens     += count;
+  else                          binHundreds += count;
+
+  const binRect = binEl.getBoundingClientRect();
+  const destX   = binRect.left + binRect.width  / 2;
+  const destY   = binRect.top  + binRect.height / 2;
+
+  const sz = getBlockSize(type);
+  const halfW = sz.w / 2, halfH = sz.h / 2;
+
+  const stagger     = Math.min(60, 400 / count);
+
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const fly = document.createElement('div');
+      fly.className = `block-fly ${type}`;
+      fly.style.left       = (originX - halfW) + 'px';
+      fly.style.top        = (originY - halfH) + 'px';
+      fly.style.width      = sz.w + 'px';
+      fly.style.height     = sz.h + 'px';
+      fly.style.transition = 'none';
+
+      document.body.appendChild(fly);
+
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const dur    = 360 + Math.random() * 80;
+        const jitterX = (Math.random() - 0.5) * 24;
+        fly.style.transition = `left ${dur}ms cubic-bezier(0.42,0,1,1), top ${dur}ms cubic-bezier(0.28,0,0.72,1), opacity ${dur}ms`;
+        fly.style.left    = (destX + jitterX - halfW) + 'px';
+        fly.style.top     = (destY - halfH) + 'px';
+        fly.style.opacity = '0.35';
+
+        setTimeout(() => {
+          fly.remove();
+          const block = makeBlockEl(type);
+          block.classList.add('block-settle');
+          binEl.appendChild(block);
+          const badge = binEl.querySelector('.bin-count');
+          if (badge) binEl.appendChild(badge);
+
+          binEl.classList.add('accepting');
+          setTimeout(() => binEl.classList.remove('accepting'), 360);
+          updateBinCounts();
+          checkOverflows();
+        }, dur);
+      }));
+    }, i * stagger);
+  }
+
+  setTimeout(() => { updateBinCounts(); checkOverflows(); }, count * stagger + 480);
+}
+
+function checkOverflows() {
+  const bins = [
+    { el: document.getElementById('binTh'), count: binThousands, type: 'thousands' },
+    { el: document.getElementById('binH'),  count: binHundreds,  type: 'hundreds' },
+    { el: document.getElementById('binT'),  count: binTens,      type: 'tens' },
+    { el: document.getElementById('binO'),  count: binOnes,      type: 'ones' },
+  ];
+
+  let anyOverflow = false;
+
+  bins.forEach(({ el, count, type }) => {
+    const blocks = el.querySelectorAll('.cube, .ten-bar, .hundred-flat');
+    // Strip old classes
+    blocks.forEach(b => b.classList.remove('ready-to-fuse'));
+
+    if (count >= 10) {
+      anyOverflow = true;
+      // Highlight the first complete set of 10 blocks
+      for (let i = 0; i < 10; i++) {
+        if (blocks[i]) blocks[i].classList.add('ready-to-fuse');
+      }
+    }
+  });
+
+  const overlay = document.getElementById('algLock');
+  overlay.classList.toggle('active', anyOverflow);
+
+  const sq = document.getElementById('sq-ones');
+  if (sq && anyOverflow && (sweepState === 'regrouping-oo' || sweepState === 'regrouping-to')) {
+    sq.classList.add('locked');
+    sq.style.pointerEvents = 'none';
+    sq.classList.remove('pulsing');
+  }
+
+  // Phase 1 Recording Progressions
+  if (sweepState === 'regrouping-oo' && !anyOverflow) {
+    sweepState = 'record-ones-oo';
+    document.getElementById('binO').classList.add('record-pulse');
+  } else if (sweepState === 'regrouping-to' && !anyOverflow) {
+    sweepState = 'record-tens-to';
+    document.getElementById('binT').classList.add('record-pulse');
+  }
+
+  // Auto-open drawer if actions are needed
+  if (anyOverflow || sweepState.includes('record')) {
+    document.getElementById('dashDrawer').classList.add('open');
+  }
+}
+
+function triggerRegroup(binEl, binType) {
+  let toEl, carryClass;
+  if (binType === 'ones') {
+    if (binOnes < 10) return;
+    binOnes -= 10;
+    toEl      = document.getElementById('binT');
+    binTens  += 1;
+    carryClass = 'ten-bar';
+  } else if (binType === 'tens') {
+    if (binTens < 10) return;
+    binTens -= 10;
+    toEl      = document.getElementById('binH');
+    binHundreds += 1;
+    carryClass  = 'hundred-flat';
+  } else if (binType === 'hundreds') {
+    if (binHundreds < 10) return;
+    binHundreds -= 10;
+    toEl      = document.getElementById('binTh');
+    binThousands += 1;
+    carryClass  = 'thousand-cube';
+  } else {
+    return;
+  }
+
+  rebuildBinDOM(binEl, binType);
+
+  const fromRect = binEl.getBoundingClientRect();
+  const toRect   = toEl.getBoundingClientRect();
+  const sz       = getBlockSize(carryClass);
+  const halfW    = sz.w / 2, halfH = sz.h / 2;
+
+  const carry = document.createElement('div');
+  carry.className = `carry-fly ${carryClass}`;
+  
+  if (carryClass === 'hundred-flat') {
+    for (let s = 0; s < 100; s++) {
+      const seg = document.createElement('div');
+      seg.className = 'hund-seg';
+      carry.appendChild(seg);
+    }
+  }
+
+  carry.style.width      = sz.w + 'px';
+  carry.style.height     = sz.h + 'px';
+  carry.style.left       = (fromRect.left + fromRect.width/2  - halfW) + 'px';
+  carry.style.top        = (fromRect.top  + fromRect.height/2 - halfH) + 'px';
+  carry.style.transition = 'none';
+  document.body.appendChild(carry);
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const dur = 420;
+    carry.style.transition = `left ${dur}ms var(--spring), top ${dur}ms var(--spring), opacity ${dur}ms`;
+    carry.style.left = (toRect.left + toRect.width/2  - halfW) + 'px';
+    carry.style.top  = (toRect.top  + toRect.height/2 - halfH) + 'px';
+
+    setTimeout(() => {
+      carry.remove();
+      const block = makeBlockEl(carryClass);
+      block.classList.add('block-settle');
+      toEl.appendChild(block);
+      const badge = toEl.querySelector('.bin-count');
+      if (badge) toEl.appendChild(badge);
+
+      toEl.classList.add('accepting');
+      setTimeout(() => toEl.classList.remove('accepting'), 360);
+      updateBinCounts();
+      checkOverflows();
+    }, dur);
+  }));
+
+  updateBinCounts();
+  checkOverflows();
+}
+
+function rebuildBinDOM(binEl, binType) {
+  const blockClass = binType==='ones' ? 'cube' : binType==='tens' ? 'ten-bar' : binType==='hundreds' ? 'hundred-flat' : 'thousand-cube';
+  const logCount   = binType==='ones' ? binOnes : binType==='tens' ? binTens : binType==='hundreds' ? binHundreds : binThousands;
+
+  binEl.querySelectorAll('.cube, .ten-bar, .hundred-flat, .thousand-cube').forEach(e=>e.remove());
+
+  for (let i = 0; i < logCount; i++) {
+    binEl.appendChild(makeBlockEl(blockClass));
+  }
+  const badge = binEl.querySelector('.bin-count');
+  if (badge) binEl.appendChild(badge);
+}
+
+function updateBinCounts() {
+  const setCount = (id, n) => {
+    const el = document.getElementById(id);
+    if(el) {
+        el.textContent = n;
+        el.classList.toggle('show', n > 0);
+    }
+  };
+  setCount('cntTh', binThousands);
+  setCount('cntH', binHundreds);
+  setCount('cntT', binTens);
+  setCount('cntO', binOnes);
+}
+
+const _prev = {};
+
+function updateAlg(A, B) {
+  _setFactor(A, 'aA_T','aA_O');
+  _setFactor(B, 'aB_T','aB_O');
+}
+
+function _setFactor(f, tId, oId) {
+  const tel = document.getElementById(tId);
+  const oel = document.getElementById(oId);
+  if (!tel||!oel) return;
+  if (!f.total) { tel.textContent=''; oel.textContent=''; return; }
+  if (f.T > 0) {
+    _popAD(tId, f.T, 't');
+    _popAD(oId, f.O, 'o');
+  } else {
+    tel.textContent = '';
+    _popAD(oId, f.O, 'o');
+  }
+}
+
+function _popAD(id, val, col) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const s = val===''||val===null?'':String(val);
+  if (_prev[id]===s) return;
+  _prev[id]=s;
+  el.textContent=s;
+  el.className='ad '+col;
+  if (s!=='') { el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),400); }
+}
+
+function buildBanks() {
+  const bT = document.getElementById('bankTop');
+  const bR = document.getElementById('bankRight');
+  bT.innerHTML=''; bR.innerHTML='';
+  bT.appendChild(makeSrc('ten','h'));
+  bT.appendChild(makeSrc('one','h'));
+  bR.appendChild(makeSrc('ten','v'));
+  bR.appendChild(makeSrc('one','v'));
+}
+
+function makeSrc(kind, axis) {
+  const el = document.createElement('div');
+  el.className = `src src-${kind}-${axis}`;
+  el.draggable = true;
+  el.title = kind==='ten'?'10':'1';
+  el.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('kind', kind);
+    e.dataTransfer.setData('axis', axis);
+    e.dataTransfer.effectAllowed = 'copy';
+  });
+  el.addEventListener('click', () => {
+    if (axis==='h') addTop(kind==='ten'?10:1);
+    else            addRight(kind==='ten'?10:1);
+  });
+  return el;
+}
+
+// BINS CLICK LOGIC
+document.getElementById('binO').addEventListener('click', () => {
+  if (binOnes >= 10) triggerRegroup(document.getElementById('binO'), 'ones');
+  else if (sweepState === 'record-ones-oo') {
+    document.getElementById('binO').classList.remove('record-pulse');
+    _popAD('p1_O', binOnes, 'o'); // Record ones in algorithm
+    document.getElementById('pp1').classList.add('lit');
+    
+    // VAPORIZE THE RECORDED ONES
+    binOnes = 0;
+    rebuildBinDOM(document.getElementById('binO'), 'ones');
+    updateBinCounts();
+    
+    if (binTens > 0) {
+      sweepState = 'record-carry-oo';
+      document.getElementById('binT').classList.add('record-pulse');
+    } else {
+      sweepState = 'harvested-oo';
+      const sq = document.getElementById('sq-ones');
+      if (sq) { sq.classList.remove('locked'); sq.style.pointerEvents = 'auto'; sq.classList.add('pulsing'); }
+    }
+  }
+});
+
+document.getElementById('binT').addEventListener('click', () => {
+  if (binTens >= 10 && sweepState !== 'record-carry-oo' && sweepState !== 'record-tens-to') {
+    triggerRegroup(document.getElementById('binT'), 'tens');
+  }
+  else if (sweepState === 'record-carry-oo') {
+    document.getElementById('binT').classList.remove('record-pulse');
+    _popAD('c_T', binTens, 't'); // Record carry
+    
+    // Carry recorded, unlock squeegee (Blocks physically stay in bin!)
+    sweepState = 'harvested-oo';
+    const sq = document.getElementById('sq-ones');
+    if (sq) { sq.classList.remove('locked'); sq.style.pointerEvents = 'auto'; sq.classList.add('pulsing'); }
+  }
+  else if (sweepState === 'record-tens-to') {
+    document.getElementById('binT').classList.remove('record-pulse');
+    _popAD('p1_T', binTens, 't'); // Record partial product tens
+    
+    binTens = 0;
+    rebuildBinDOM(document.getElementById('binT'), 'tens');
+    updateBinCounts();
+    
+    if (binHundreds > 0) {
+      sweepState = 'record-hundreds-to';
+      document.getElementById('binH').classList.add('record-pulse');
+    } else {
+      sweepState = 'phase-1-done';
+    }
+  }
+});
+
+document.getElementById('binH').addEventListener('click', () => {
+  if (binHundreds >= 10 && sweepState !== 'record-hundreds-to') {
+    if (typeof triggerRegroup === 'function') triggerRegroup(document.getElementById('binH'), 'hundreds');
+  }
+  else if (sweepState === 'record-hundreds-to') {
+    document.getElementById('binH').classList.remove('record-pulse');
+    _popAD('p1_H', binHundreds, 'h'); // Record partial product hundreds (Gold)
+    
+    binHundreds = 0;
+    rebuildBinDOM(document.getElementById('binH'), 'hundreds');
+    updateBinCounts();
+    
+    sweepState = 'phase-1-done';
+  }
+});
+
+document.getElementById('gCanvas').addEventListener('dblclick', e => {
+  const tgt = e.target;
+  const canvas = document.getElementById('gCanvas');
+  const az     = document.getElementById('arrayZone');
+  const svg    = document.getElementById('gridSVG');
+  if (tgt===canvas||tgt===az||tgt===svg||tgt.tagName==='line') {
+    topSegs=[]; rightSegs=[];
+    activeGhosts=[]; // Clear ghosts
+    sweepState='idle'; sweepX=0;
+    binOnes=0; binTens=0; binHundreds=0; binThousands=0;
+    Object.keys(_prev).forEach(k=>delete _prev[k]);
+    ['c_T', 'c_O', 'p1_TH', 'p1_H', 'p1_T', 'p1_O', 'p2_TH', 'p2_H', 'p2_T', 't_TH', 't_H', 't_T', 't_O'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = ''; el.className = 'ad ' + (id.includes('_T') ? 't' : id.includes('_H') ? 'h' : 'o'); }
+    });
+    document.querySelectorAll('.squeegee,.sweep-fill,.harvest-fill,.quad-ghost,.block-fly,.carry-fly').forEach(e=>e.remove());
+    ['binO','binT','binH','binTh'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) {
+          el.querySelectorAll('.cube,.ten-bar,.hundred-flat,.thousand-cube').forEach(e=>e.remove());
+          el.classList.remove('accepting', 'record-pulse');
+      }
+    });
+    document.getElementById('algLock').classList.remove('active');
+    document.getElementById('dashDrawer').classList.remove('open');
+    updateBinCounts();
+    layout();
+  }
+});
+
+document.getElementById('zoomSlider').addEventListener('input', e => {
+  const z = e.target.value;
+  document.documentElement.style.setProperty('--zoom', z);
+  buildBanks();
+  layout();
+});
+
+// Drawer Handle Toggle Logic
+document.getElementById('drawerHandle').addEventListener('click', () => {
+  document.getElementById('dashDrawer').classList.toggle('open');
+});
+
+// Initialize dynamic zoom defaults
+document.documentElement.style.setProperty('--zoom', 1);
+buildBanks();
+triggerAutoZoom();
+layout();
+</script>
+</body>
+</html>
