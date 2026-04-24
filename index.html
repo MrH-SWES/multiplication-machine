@@ -1493,9 +1493,8 @@ function checkOverflows() {
 
     if (count >= 10) {
       anyOverflow = true;
-      // Highlight ALL complete sets of 10 blocks (not just the first 10)
-      const completeGroups = Math.floor(count / 10);
-      for (let i = 0; i < completeGroups * 10; i++) {
+      // STRICT PEDAGOGY: Highlight ONLY the bottom-most complete row (first 10 blocks)
+      for (let i = 0; i < 10; i++) {
         if (blocks[i]) blocks[i].classList.add('ready-to-fuse');
       }
     }
@@ -1523,7 +1522,7 @@ function checkOverflows() {
     document.getElementById('dashDrawer').classList.add('open');
   }
 }
-
+  
 function checkDrawerRetract() {
     if (binOnes === 0 && binTens === 0 && binHundreds === 0 && binThousands === 0) {
         document.getElementById('dashDrawer').classList.remove('open');
