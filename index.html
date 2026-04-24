@@ -277,8 +277,6 @@
       position: absolute;
       pointer-events: none;
     }
-    .sweep-fill.oo { }
-    .sweep-fill.to { }
 
     .quad-ghost {
       position: absolute;
@@ -311,23 +309,8 @@
       50%     { opacity: .7; }
     }
 
-    .bin.record-pulse {
-      border-color: var(--accent) !important;
-      box-shadow: 0 0 15px 4px rgba(0, 122, 255, 0.3) !important;
-      cursor: pointer;
-      animation: recPulse 1s ease-in-out infinite alternate;
-    }
-    @keyframes recPulse { 0% { transform: scale(1); } 100% { transform: scale(1.03); } }
-
-    .bin.hundreds-bin.record-pulse {
-      border-color: var(--hundreds) !important;
-      box-shadow: 0 0 15px 4px rgba(255, 215, 0, 0.35) !important;
-      cursor: pointer;
-      animation: recPulse 1s ease-in-out infinite alternate;
-    }
-
     /* ══════════════════════════════════════
-       DASHBOARD FLOOR
+       DASHBOARD FLOOR & BINS
     ══════════════════════════════════════ */
     .dashboard-floor {
       height: 160px;
@@ -355,20 +338,26 @@
       color: var(--text-light);
     }
     .bin {
-      min-width: auto;
-      width: fit-content;
       min-height: 120px;
       border-radius: 8px;
       border: 2.5px dashed rgba(0,0,0,.12);
-      display: grid;
-      grid-template-columns: repeat(10, var(--cube-base));
-      grid-auto-rows: var(--cube-base);
-      gap: 1px;
-      align-content: end; /* Gravity: stack from the bottom up */
       padding: 8px;
       transition: border-color .2s;
       position: relative;
       transform-style: preserve-3d;
+      display: flex;
+      gap: 1px;
+    }
+    .bin.ones-bin, .bin.hundreds-bin { 
+      flex-wrap: wrap-reverse; 
+      align-content: flex-start;
+      width: calc((var(--cube-base) * 10) + 25px); 
+    }
+    .bin.tens-bin { 
+      flex-direction: column-reverse; 
+      align-items: center; 
+      justify-content: flex-start;
+      min-width: calc((var(--cube-base) * 10) + 25px); 
     }
     .bin.thousands-bin { border-color: rgba(76, 187, 23, 0.35); }
     .bin.hundreds-bin { border-color: rgba(255, 215, 0, 0.45); }
@@ -384,10 +373,33 @@
     .bin.tens-bin.accepting     { border-color:var(--tens);     background:rgba(65,105,225,.05); }
     .bin.ones-bin.accepting     { border-color:var(--ones);     background:rgba(220,20,60,.05); }
 
+    /* Ones Record Pulse (Red) */
+    .bin.ones-bin.record-pulse {
+      border-color: var(--ones) !important;
+      box-shadow: 0 0 15px 4px rgba(220, 20, 60, 0.35) !important;
+      cursor: pointer;
+      animation: recPulse 1s ease-in-out infinite alternate;
+    }
+    /* Tens Record Pulse (Blue) */
+    .bin.tens-bin.record-pulse {
+      border-color: var(--tens) !important;
+      box-shadow: 0 0 15px 4px rgba(65, 105, 225, 0.35) !important;
+      cursor: pointer;
+      animation: recPulse 1s ease-in-out infinite alternate;
+    }
+    /* Hundreds Record Pulse (Gold) */
+    .bin.hundreds-bin.record-pulse {
+      border-color: var(--hundreds) !important;
+      box-shadow: 0 0 15px 4px rgba(255, 215, 0, 0.35) !important;
+      cursor: pointer;
+      animation: recPulse 1s ease-in-out infinite alternate;
+    }
+    @keyframes recPulse { 0% { transform: scale(1); } 100% { transform: scale(1.03); } }
+
     /* ══════════════════════════════════════
        PHYSICAL BLOCKS — 3-D Isometric
     ══════════════════════════════════════ */
-    .cube, .ten-bar, .hundred-flat {
+    .cube, .ten-bar, .hundred-flat, .thousand-cube {
       flex-shrink: 0 !important;
       position: relative;
       display: inline-flex;
@@ -403,12 +415,13 @@
         width: var(--cube-base); height: var(--cube-base); border-radius: calc(6px * var(--zoom));
         background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block); position: relative; flex-shrink: 0 !important;
     }
+    /* TEN-BAR (tens unit — blue) */
     .ten-bar {
         width: calc(var(--cell) * 10); height: var(--cube-base); border-radius: calc(6px * var(--zoom));
         background: var(--tens-front); transform: rotateX(10deg); display: flex; box-shadow: var(--shadow-block); position: relative; flex-shrink: 0 !important;
     }
 
-    /* HUNDRED-FLAT (hundreds — green) */
+    /* HUNDRED-FLAT (hundreds — gold) */
     .hundred-flat {
       width:  calc(var(--cell) * 10);
       height: calc(var(--cell) * 10);
@@ -433,6 +446,28 @@
       inset: 0;
       background: var(--hund-top);
       border-radius: 1px 1px 0 0;
+      transform: rotateX(-80deg) scaleY(0.45) translateY(-100%);
+      transform-origin: top center;
+    }
+
+    /* THOUSAND-CUBE (thousands — green) */
+    .thousand-cube {
+      width: calc(var(--cube-base) * 10);
+      height: calc(var(--cube-base) * 10);
+      background: var(--thousands-front);
+      border-radius: calc(8px * var(--zoom));
+      transform: rotateX(10deg);
+      box-shadow: 
+        calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 0 var(--thousands-side),
+        0 8px 24px rgba(0,0,0,0.2);
+      position: relative;
+      flex-shrink: 0 !important;
+      cursor: grab;
+    }
+    .thousand-cube::before {
+      content: ''; position: absolute; inset: 0;
+      background: var(--thousands-top);
+      border-radius: calc(8px * var(--zoom)) calc(8px * var(--zoom)) 0 0;
       transform: rotateX(-80deg) scaleY(0.45) translateY(-100%);
       transform-origin: top center;
     }
@@ -467,6 +502,14 @@
       border-radius: 3px;
       box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 0 var(--hund-side),
                   0 4px 10px rgba(0,0,0,.35);
+    }
+    .block-fly.thousand-cube, .carry-fly.thousand-cube {
+      width: calc(var(--cube-base) * 10);
+      height: calc(var(--cube-base) * 10);
+      background: var(--thousands-front);
+      border-radius: calc(8px * var(--zoom));
+      box-shadow: calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 0 var(--thousands-side),
+                  0 12px 30px rgba(0,0,0,0.4);
     }
 
     /* ── Settle pop-in ── */
@@ -567,15 +610,16 @@
     }
 
     .alg-problem { width: 100%; display: flex; flex-direction: column; align-items: flex-end; gap: 1px; margin-bottom: 4px; }
-    .carry-row { display:flex; justify-content:flex-end; gap:0; min-height:24px; }
-    .cd { width:30px; height:24px; text-align:center; line-height:24px; font-size:1.3rem; font-weight:800; letter-spacing:-0.04em; color:var(--tens); border-radius:5px; }
-    .cd.pop { animation:dPop .35s var(--spring) both; }
+    
+    .carry-row { margin-bottom: -6px; min-height: 20px; }
+    .ad.carry { height: 20px; line-height: 20px; font-size: 1.2rem; }
+    
     .alg-row { display:flex; align-items:baseline; gap:0; }
     .alg-sym { font-size:1.9rem; font-weight:900; color:var(--text-light); line-height:42px; margin-right:2px; }
     .ad { width:30px; height:42px; text-align:center; line-height:42px; font-size:2.3rem; font-weight:800; letter-spacing:-0.04em; border-radius:8px; }
     .ad.t   { color:var(--tens); }
     .ad.o   { color:var(--ones); }
-    .ad.h { color: var(--hundreds); }
+    .ad.h   { color:var(--hundreds); }
     .ad.pop { animation:dPop .35s var(--spring) both; }
     @keyframes dPop { 0% { transform:scale(.5) translateY(8px); opacity:0; } 100% { transform:scale(1)  translateY(0);   opacity:1; } }
     .alg-line { height:2.5px; background:var(--text-main); width:100%; border-radius:2px; margin:5px 0 4px; }
@@ -632,6 +676,11 @@
     </div>
     <div class="dashboard-floor">
       <div class="bin-group">
+        <div class="bin-label">Thousands</div>
+        <div class="bin thousands-bin" id="binTh"><span class="bin-count" id="cntTh">0</span></div>
+      </div>
+      <div class="bin-divider"></div>
+      <div class="bin-group">
         <div class="bin-label">Hundreds</div>
         <div class="bin hundreds-bin" id="binH"><span class="bin-count" id="cntH">0</span></div>
       </div>
@@ -653,9 +702,9 @@
       <div class="alg-lock-icon">🔒</div>
     </div>
     <div class="alg-problem">
-      <div class="carry-row" id="carryRow">
-        <div class="cd" id="c_T"></div>
-        <div class="cd" id="c_O"></div>
+      <div class="alg-row carry-row">
+        <div class="ad carry t" id="c_T"></div>
+        <div class="ad carry o" id="c_O"></div>
       </div>
       <div class="alg-row">
         <div class="ad t" id="aA_T"></div>
@@ -731,9 +780,10 @@ function factorB() {
 let sweepState = 'idle';
 let sweepX     = 0;
 
-let binOnes     = 0;
-let binTens     = 0;
-let binHundreds = 0;
+let binOnes      = 0;
+let binTens      = 0;
+let binHundreds  = 0;
+let binThousands = 0;
 
 function triggerAutoZoom() {
   const A = factorA(), B = factorB();
@@ -744,7 +794,7 @@ function triggerAutoZoom() {
   const bankRightW  = 60;
   const dashFloorH  = 160;
   const scrollbarM  = 16;
-  const PADDING_OFFSET = 64; // Moved to top to prevent ReferenceError
+  const PADDING_OFFSET = 64; 
   const CELL_BASE   = 36;
   const RAIL_BASE   = CELL_BASE; 
 
@@ -759,7 +809,6 @@ function triggerAutoZoom() {
   const newZoom = Math.min(scaleW, scaleH, 2.0); 
   const clamped = Math.max(0.35, +newZoom.toFixed(2));
 
-  // Set the single unified zoom variable
   document.documentElement.style.setProperty('--zoom', clamped);
 
   const slider = document.getElementById('zoomSlider');
@@ -952,12 +1001,11 @@ function placeSqueegee(C, R, A, B) {
     sweepX = A.total * C; 
   }
 
-  // --- BUG 1 FIX: Zero-Value Squeegee Logic ---
   if (B.O === 0) {
     const sq = document.getElementById('sq-ones');
     if (sq) sq.style.display = 'none';
     if (sweepState === 'ready' || sweepState === 'idle') {
-        sweepState = 'done'; // Skip ones sweep entirely, proceed to tens (Phase 3)
+        sweepState = 'done'; 
     }
     return;
   }
@@ -982,11 +1030,10 @@ function placeSqueegee(C, R, A, B) {
   const sqLeft = sweepX - 3; 
   sq.style.left = sqLeft + 'px';
 
-  const locked = sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo' || sweepState === 'regrouping-to' || sweepState === 'record-tens-to' || sweepState === 'record-hundreds-to' || sweepState === 'phase-1-done';
+  // Exhaustive state lock
+  const locked = (sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo' || sweepState === 'stopped-to' || sweepState === 'regrouping-to' || sweepState === 'record-tens-to' || sweepState === 'record-hundreds-to' || sweepState === 'phase-1-done');
   sq.classList.toggle('locked', locked);
-  sq.classList.toggle('pulsing',
-    sweepState === 'ready' || sweepState === 'harvested-oo'
-  );
+  sq.classList.toggle('pulsing', sweepState === 'ready' || sweepState === 'harvested-oo');
 }
 
 function initSqueegeDrag(sq) {
@@ -996,6 +1043,7 @@ function initSqueegeDrag(sq) {
   const onStart = (clientX) => {
     const A = factorA();
     if (!A.total) return;
+    
     // STRICT LOCK
     if (sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo' || sweepState === 'stopped-to' || sweepState === 'regrouping-to' || sweepState === 'record-tens-to' || sweepState === 'record-hundreds-to' || sweepState === 'phase-1-done') return; 
 
@@ -1008,7 +1056,8 @@ function initSqueegeDrag(sq) {
 
   const onMove = (clientX) => {
     if (!dragging) return;
-    // STRICT LOCK
+
+    // STRICT LOCK FORCED ABORT
     if (sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo' || sweepState === 'stopped-to' || sweepState === 'regrouping-to' || sweepState === 'record-tens-to' || sweepState === 'record-hundreds-to' || sweepState === 'phase-1-done') {
       dragging = false; sq.style.cursor = ''; return;
     }
@@ -1081,7 +1130,6 @@ function renderSweepFill(C, A, B) {
     wrapper.style.overflow = 'hidden';
     wrapper.style.background = 'none';
 
-    // Inner grid stays pinned to the right edge of the sliding wrapper
     const inner = document.createElement('div');
     inner.style.position = 'absolute';
     inner.style.right = '0';
@@ -1211,9 +1259,6 @@ function harvestQuadrant(cls, val, A, B, C) {
       sq.style.pointerEvents = 'none';
       sq.classList.remove('pulsing');
     }
-    if (A.T === 0) {
-      // No tens factor; recording phase will still run, then squeegee is done
-    }
   } else if (cls === 'to') {
     sweepState = 'regrouping-to';
     const sq = document.getElementById('sq-ones');
@@ -1247,6 +1292,7 @@ function getBlockSize(type) {
   if (type === 'cube')         return { w: cubeBase,      h: cubeBase };
   if (type === 'ten-bar')      return { w: cubeBase * 10, h: cubeBase };
   if (type === 'hundred-flat') return { w: cubeBase * 10, h: cubeBase * 10 };
+  if (type === 'thousand-cube')return { w: cubeBase * 10, h: cubeBase * 10 };
   return { w: 14, h: 14 };
 }
 
@@ -1310,9 +1356,10 @@ function spawnBlocks(type, count, binType, originX, originY) {
 
 function checkOverflows() {
   const bins = [
-    { el: document.getElementById('binH'), count: binHundreds, type: 'hundreds' },
-    { el: document.getElementById('binT'), count: binTens,     type: 'tens' },
-    { el: document.getElementById('binO'), count: binOnes,     type: 'ones' },
+    { el: document.getElementById('binTh'), count: binThousands, type: 'thousands' },
+    { el: document.getElementById('binH'),  count: binHundreds,  type: 'hundreds' },
+    { el: document.getElementById('binT'),  count: binTens,      type: 'tens' },
+    { el: document.getElementById('binO'),  count: binOnes,      type: 'ones' },
   ];
 
   let anyOverflow = false;
@@ -1335,15 +1382,13 @@ function checkOverflows() {
   overlay.classList.toggle('active', anyOverflow);
 
   const sq = document.getElementById('sq-ones');
-  if (sq) {
-    if (anyOverflow) {
-      sq.classList.add('locked');
-      sq.style.pointerEvents = 'none';
-      sq.classList.remove('pulsing');
-    }
+  if (sq && anyOverflow && (sweepState === 'regrouping-oo' || sweepState === 'regrouping-to')) {
+    sq.classList.add('locked');
+    sq.style.pointerEvents = 'none';
+    sq.classList.remove('pulsing');
   }
 
-  // If we were regrouping and just finished (no overflow), move to recording phase
+  // Phase 1 Recording Progressions
   if (sweepState === 'regrouping-oo' && !anyOverflow) {
     sweepState = 'record-ones-oo';
     document.getElementById('binO').classList.add('record-pulse');
@@ -1367,6 +1412,12 @@ function triggerRegroup(binEl, binType) {
     toEl      = document.getElementById('binH');
     binHundreds += 1;
     carryClass  = 'hundred-flat';
+  } else if (binType === 'hundreds') {
+    if (binHundreds < 10) return;
+    binHundreds -= 10;
+    toEl      = document.getElementById('binTh');
+    binThousands += 1;
+    carryClass  = 'thousand-cube';
   } else {
     return;
   }
@@ -1422,10 +1473,10 @@ function triggerRegroup(binEl, binType) {
 }
 
 function rebuildBinDOM(binEl, binType) {
-  const blockClass = binType==='ones' ? 'cube' : binType==='tens' ? 'ten-bar' : 'hundred-flat';
-  const logCount   = binType==='ones' ? binOnes : binType==='tens' ? binTens : binHundreds;
+  const blockClass = binType==='ones' ? 'cube' : binType==='tens' ? 'ten-bar' : binType==='hundreds' ? 'hundred-flat' : 'thousand-cube';
+  const logCount   = binType==='ones' ? binOnes : binType==='tens' ? binTens : binType==='hundreds' ? binHundreds : binThousands;
 
-  binEl.querySelectorAll('.cube, .ten-bar, .hundred-flat').forEach(e=>e.remove());
+  binEl.querySelectorAll('.cube, .ten-bar, .hundred-flat, .thousand-cube').forEach(e=>e.remove());
 
   for (let i = 0; i < logCount; i++) {
     binEl.appendChild(makeBlockEl(blockClass));
@@ -1437,9 +1488,12 @@ function rebuildBinDOM(binEl, binType) {
 function updateBinCounts() {
   const setCount = (id, n) => {
     const el = document.getElementById(id);
-    el.textContent = n;
-    el.classList.toggle('show', n > 0);
+    if(el) {
+        el.textContent = n;
+        el.classList.toggle('show', n > 0);
+    }
   };
+  setCount('cntTh', binThousands);
   setCount('cntH', binHundreds);
   setCount('cntT', binTens);
   setCount('cntO', binOnes);
@@ -1477,17 +1531,6 @@ function _popAD(id, val, col) {
   if (s!=='') { el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),400); }
 }
 
-function _popCD(id, val) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const s = val===''||val===null?'':String(val);
-  if (_prev[id]===s) return;
-  _prev[id]=s;
-  el.textContent=s;
-  el.className='cd';
-  if (s!=='') { el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),400); }
-}
-
 function buildBanks() {
   const bT = document.getElementById('bankTop');
   const bR = document.getElementById('bankRight');
@@ -1515,6 +1558,7 @@ function makeSrc(kind, axis) {
   return el;
 }
 
+// BINS CLICK LOGIC
 document.getElementById('binO').addEventListener('click', () => {
   if (binOnes >= 10) triggerRegroup(document.getElementById('binO'), 'ones');
   else if (sweepState === 'record-ones-oo') {
@@ -1522,17 +1566,22 @@ document.getElementById('binO').addEventListener('click', () => {
     _popAD('p1_O', binOnes, 'o'); // Record ones in algorithm
     document.getElementById('pp1').classList.add('lit');
     
+    // VAPORIZE THE RECORDED ONES
+    binOnes = 0;
+    rebuildBinDOM(document.getElementById('binO'), 'ones');
+    updateBinCounts();
+    
     if (binTens > 0) {
       sweepState = 'record-carry-oo';
       document.getElementById('binT').classList.add('record-pulse');
     } else {
-      // No carry, unlock squeegee
       sweepState = 'harvested-oo';
       const sq = document.getElementById('sq-ones');
       if (sq) { sq.classList.remove('locked'); sq.style.pointerEvents = 'auto'; sq.classList.add('pulsing'); }
     }
   }
 });
+
 document.getElementById('binT').addEventListener('click', () => {
   if (binTens >= 10 && sweepState !== 'record-carry-oo' && sweepState !== 'record-tens-to') {
     triggerRegroup(document.getElementById('binT'), 'tens');
@@ -1540,7 +1589,11 @@ document.getElementById('binT').addEventListener('click', () => {
   else if (sweepState === 'record-carry-oo') {
     document.getElementById('binT').classList.remove('record-pulse');
     _popAD('c_T', binTens, 't'); // Record carry
-    binTens = 0; rebuildBinDOM(document.getElementById('binT'), 'tens'); updateBinCounts();
+    
+    // VAPORIZE THE RECORDED CARRY TENS
+    binTens = 0;
+    rebuildBinDOM(document.getElementById('binT'), 'tens');
+    updateBinCounts();
     
     sweepState = 'harvested-oo';
     const sq = document.getElementById('sq-ones');
@@ -1549,27 +1602,33 @@ document.getElementById('binT').addEventListener('click', () => {
   else if (sweepState === 'record-tens-to') {
     document.getElementById('binT').classList.remove('record-pulse');
     _popAD('p1_T', binTens, 't'); // Record partial product tens
-    binTens = 0; rebuildBinDOM(document.getElementById('binT'), 'tens'); updateBinCounts();
+    
+    binTens = 0;
+    rebuildBinDOM(document.getElementById('binT'), 'tens');
+    updateBinCounts();
     
     if (binHundreds > 0) {
       sweepState = 'record-hundreds-to';
       document.getElementById('binH').classList.add('record-pulse');
     } else {
-      sweepState = 'phase-1-done'; // Ready for Factor B Tens Sweep!
+      sweepState = 'phase-1-done';
     }
   }
 });
 
 document.getElementById('binH').addEventListener('click', () => {
   if (binHundreds >= 10 && sweepState !== 'record-hundreds-to') {
-    if (typeof triggerRegroup === 'function') triggerRegroup(document.getElementById('binH'), 'hundreds');
+    triggerRegroup(document.getElementById('binH'), 'hundreds');
   }
   else if (sweepState === 'record-hundreds-to') {
     document.getElementById('binH').classList.remove('record-pulse');
-    _popAD('p1_H', binHundreds, 'h'); // Record partial product hundreds (Gold)
-    binHundreds = 0; rebuildBinDOM(document.getElementById('binH'), 'hundreds'); updateBinCounts();
+    _popAD('p1_H', binHundreds, 'h'); // Record partial product hundreds
     
-    sweepState = 'phase-1-done'; // Ready for Factor B Tens Sweep!
+    binHundreds = 0;
+    rebuildBinDOM(document.getElementById('binH'), 'hundreds');
+    updateBinCounts();
+    
+    sweepState = 'phase-1-done';
   }
 });
 
@@ -1581,15 +1640,21 @@ document.getElementById('gCanvas').addEventListener('dblclick', e => {
   if (tgt===canvas||tgt===az||tgt===svg||tgt.tagName==='line') {
     topSegs=[]; rightSegs=[];
     sweepState='idle'; sweepX=0;
-    binOnes=0; binTens=0; binHundreds=0;
+    binOnes=0; binTens=0; binHundreds=0; binThousands=0;
     Object.keys(_prev).forEach(k=>delete _prev[k]);
+    ['c_T', 'c_O', 'p1_TH', 'p1_H', 'p1_T', 'p1_O', 'p2_TH', 'p2_H', 'p2_T', 't_TH', 't_H', 't_T', 't_O'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = ''; el.className = 'ad ' + (id.includes('_T') ? 't' : id.includes('_H') ? 'h' : 'o'); }
+    });
     document.querySelectorAll('.squeegee,.sweep-fill,.harvest-fill,.quad-ghost,.block-fly,.carry-fly').forEach(e=>e.remove());
-    ['binO','binT','binH'].forEach(id => {
-      document.getElementById(id).querySelectorAll('.cube,.ten-bar,.hundred-flat').forEach(e=>e.remove());
-      document.getElementById(id).classList.remove('accepting', 'record-pulse');
+    ['binO','binT','binH','binTh'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) {
+          el.querySelectorAll('.cube,.ten-bar,.hundred-flat,.thousand-cube').forEach(e=>e.remove());
+          el.classList.remove('accepting', 'record-pulse');
+      }
     });
     document.getElementById('algLock').classList.remove('active');
-    ['c_T','c_O'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = ''; });
     updateBinCounts();
     layout();
   }
