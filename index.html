@@ -295,6 +295,8 @@
     }
     .quad-ghost.oo { background: rgba(220,20,60,.15);  color: rgba(220,20,60,.55); }
     .quad-ghost.to { background: rgba(65,105,225,.07); color: rgba(65,105,225,.55); }
+    .quad-ghost.ot { background: rgba(65,105,225,.07); color: rgba(65,105,225,.55); }
+    .quad-ghost.tt { background: rgba(255,215,0,.15);  color: rgba(255,215,0,.65); }
 
     .harvest-fill {
       position: absolute;
@@ -309,6 +311,8 @@
     }
     .harvest-fill.oo { background: rgba(220,20,60,.22); color: rgba(220,20,60,.7); }
     .harvest-fill.to { background: rgba(65,105,225,.22); color: rgba(65,105,225,.7); }
+    .harvest-fill.ot { background: rgba(65,105,225,.22); color: rgba(65,105,225,.7); }
+    .harvest-fill.tt { background: rgba(255,215,0,.35); color: rgba(255,215,0,.8); }
     @keyframes harvestPulse {
       0%,100% { opacity: 1; }
       50%     { opacity: .7; }
@@ -428,12 +432,19 @@
       cursor: pointer;
       animation: recPulse 1s ease-in-out infinite alternate;
     }
+    /* Thousands Record Pulse (Green) */
+    .bin.thousands-bin.record-pulse {
+      border-color: var(--thousands) !important;
+      box-shadow: 0 0 15px 4px rgba(76, 187, 23, 0.35) !important;
+      cursor: pointer;
+      animation: recPulse 1s ease-in-out infinite alternate;
+    }
     @keyframes recPulse { 0% { transform: scale(1); } 100% { transform: scale(1.03); } }
 
     /* ══════════════════════════════════════
        PHYSICAL BLOCKS — 3-D Isometric
     ══════════════════════════════════════ */
-    .cube, .ten-bar, .hundred-flat, .thousand-cube {
+    .cube, .ten-bar, .ten-bar-v, .hundred-flat, .thousand-cube {
       flex-shrink: 0 !important;
       position: relative;
       display: inline-flex;
@@ -449,10 +460,15 @@
         width: var(--cube-base); height: var(--cube-base); border-radius: calc(6px * var(--zoom));
         background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block); position: relative; flex-shrink: 0 !important;
     }
-    /* TEN-BAR (tens unit — blue) */
+    /* TEN-BAR (tens unit — blue - Horizontal) */
     .ten-bar {
         width: calc(var(--cell) * 10); height: var(--cube-base); border-radius: calc(6px * var(--zoom));
         background: var(--tens-front); transform: rotateX(10deg); display: flex; box-shadow: var(--shadow-block); position: relative; flex-shrink: 0 !important;
+    }
+    /* TEN-BAR-V (tens unit - Vertical for Phase 2 Array alignment) */
+    .ten-bar-v {
+        width: var(--cube-base); height: calc(var(--cell) * 10); border-radius: calc(6px * var(--zoom));
+        background: var(--tens-front); transform: rotateX(10deg); display: flex; flex-direction: column; box-shadow: var(--shadow-block); position: relative; flex-shrink: 0 !important;
     }
 
     /* HUNDRED-FLAT (hundreds — gold) */
@@ -492,7 +508,7 @@
       border-radius: calc(8px * var(--zoom));
       transform: rotateX(10deg);
       box-shadow: 
-        calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 0 var(--thousands-side),
+        calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 var(--thousands-side),
         0 8px 24px rgba(0,0,0,0.2);
       position: relative;
       flex-shrink: 0 !important;
@@ -518,7 +534,7 @@
       height: var(--cube-base);
       background: var(--ones-front);
       border-radius: 2px;
-      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 0 var(--ones-side),
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--ones-side),
                   0 4px 10px rgba(0,0,0,.35);
     }
     .block-fly.ten-bar {
@@ -526,7 +542,15 @@
       height: var(--cube-base);
       background: var(--tens-front);
       border-radius: 3px;
-      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 0 var(--tens-side),
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--tens-side),
+                  0 4px 10px rgba(0,0,0,.35);
+    }
+    .block-fly.ten-bar-v {
+      width: var(--cube-base);
+      height: calc(var(--cell) * 10);
+      background: var(--tens-front);
+      border-radius: 3px;
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--tens-side),
                   0 4px 10px rgba(0,0,0,.35);
     }
     .block-fly.hundred-flat {
@@ -534,7 +558,7 @@
       height: calc(var(--cell) * 10);
       background: var(--hund-front);
       border-radius: 3px;
-      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 0 var(--hund-side),
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--hund-side),
                   0 4px 10px rgba(0,0,0,.35);
     }
     .block-fly.thousand-cube, .carry-fly.thousand-cube {
@@ -542,7 +566,7 @@
       height: calc(var(--cube-base) * 10);
       background: var(--thousands-front);
       border-radius: calc(8px * var(--zoom));
-      box-shadow: calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 0 var(--thousands-side),
+      box-shadow: calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 var(--thousands-side),
                   0 12px 30px rgba(0,0,0,0.4);
     }
 
@@ -567,14 +591,21 @@
       width: calc(var(--cell) * 10);
       height: var(--cube-base);
       background: var(--tens-front);
-      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 0 var(--tens-side),
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--tens-side),
                   0 6px 18px rgba(0,0,0,.4);
     }
     .carry-fly.hundred-flat {
       width: calc(var(--cell) * 10);
       height: calc(var(--cell) * 10);
       background: var(--hund-front);
-      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 0 var(--hund-side),
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--hund-side),
+                  0 6px 18px rgba(0,0,0,.4);
+    }
+    .carry-fly.thousand-cube {
+      width: calc(var(--cube-base) * 10);
+      height: calc(var(--cube-base) * 10);
+      background: var(--thousands-front);
+      box-shadow: calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 var(--thousands-side),
                   0 6px 18px rgba(0,0,0,.4);
     }
 
@@ -738,6 +769,7 @@
     </div>
     <div class="alg-problem">
       <div class="alg-row carry-row">
+        <div class="ad carry h" id="c_H"></div>
         <div class="ad carry t" id="c_T"></div>
         <div class="ad carry o" id="c_O"></div>
       </div>
@@ -799,7 +831,7 @@ const GAP = 8;
 
 let topSegs   = [];
 let rightSegs = [];
-let activeGhosts = []; // Store ghosts for dynamic zooming
+let activeGhosts = []; 
 
 function totalTop()   { return topSegs.reduce((s,x)=>s+x,0); }
 function totalRight() { return rightSegs.reduce((s,x)=>s+x,0); }
@@ -815,6 +847,7 @@ function factorB() {
 
 let sweepState = 'idle';
 let sweepX     = 0;
+let sweepX2    = 0;
 
 let binOnes      = 0;
 let binTens      = 0;
@@ -828,7 +861,7 @@ function triggerAutoZoom() {
   const algPanelW   = 170;
   const bankTopH    = 60;
   const bankRightW  = 60;
-  const dashFloorH  = 32; // Reclaimed space from chunky drawer!
+  const dashFloorH  = 32; 
   const scrollbarM  = 16;
   const PADDING_OFFSET = 32;
   const CELL_BASE   = 36;
@@ -894,9 +927,17 @@ function layout() {
   renderTopRail(C, R, A);
   renderRightRail(C, R, B);
   updateAlg(A, B);
+  
   placeSqueegee(C, R, A, B);
   renderSweepFill(C, A, B);
-  renderGhosts(C, A, B); // Dynamically render ghosts
+  
+  if (sweepState.includes('-ot') || sweepState.includes('-tt') || sweepState === 'ready-2') {
+      placeSqueegee2(C, R, A, B);
+      renderSweepFill2(C, A, B);
+      if (sweepState === 'stopped-ot' || sweepState === 'stopped-tt') showHarvestFill2(C, A, B);
+  }
+
+  renderGhosts(C, A, B); 
   if (sweepState === 'stopped-oo' || sweepState === 'stopped-to') {
     showHarvestFill(C, A, B);
   }
@@ -1025,11 +1066,14 @@ function addRight(units) {
 }
 function resetSweep() {
   sweepState = 'idle';
-  sweepX = 0;
+  sweepX = 0; sweepX2 = 0;
   document.querySelectorAll('.squeegee').forEach(e=>e.remove());
   document.querySelectorAll('.sweep-fill,.harvest-fill,.quad-ghost').forEach(e=>e.remove());
 }
 
+// ==========================================
+// PHASE 1: SQUEEGEE (Red)
+// ==========================================
 function placeSqueegee(C, R, A, B) {
   if (!A.total || !B.total) return;
 
@@ -1041,9 +1085,7 @@ function placeSqueegee(C, R, A, B) {
   if (B.O === 0) {
     const sq = document.getElementById('sq-ones');
     if (sq) sq.style.display = 'none';
-    if (sweepState === 'ready' || sweepState === 'idle') {
-        sweepState = 'done'; 
-    }
+    if (sweepState === 'ready' || sweepState === 'idle') sweepState = 'done'; 
     return;
   }
 
@@ -1059,18 +1101,18 @@ function placeSqueegee(C, R, A, B) {
     initSqueegeDrag(sq);
   }
 
-  sq.style.top    = sqTop + 'px';
-  sq.style.height = sqHeight + 'px';
-  sq.style.width  = '6px';
-  sq.style.display = 'block';
-
-  const sqLeft = sweepX - 3; 
-  sq.style.left = sqLeft + 'px';
-
-  // Exhaustive state lock
-  const locked = (sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo' || sweepState === 'stopped-to' || sweepState === 'regrouping-to' || sweepState === 'record-tens-to' || sweepState === 'record-hundreds-to' || sweepState === 'phase-1-done');
-  sq.classList.toggle('locked', locked);
-  sq.classList.toggle('pulsing', sweepState === 'ready' || sweepState === 'harvested-oo');
+  if (sweepState === 'phase-1-done' || sweepState.includes('-ot') || sweepState.includes('-tt') || sweepState.includes('2') || sweepState === 'sum-phase') {
+      sq.style.display = 'none';
+  } else {
+      sq.style.top    = sqTop + 'px';
+      sq.style.height = sqHeight + 'px';
+      sq.style.width  = '6px';
+      sq.style.display = 'block';
+      sq.style.left = (sweepX - 3) + 'px';
+      const locked = (sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo' || sweepState === 'stopped-to' || sweepState === 'regrouping-to' || sweepState === 'record-tens-to' || sweepState === 'record-hundreds-to' || sweepState === 'phase-1-done');
+      sq.classList.toggle('locked', locked);
+      sq.classList.toggle('pulsing', sweepState === 'ready' || sweepState === 'harvested-oo');
+  }
 }
 
 function initSqueegeDrag(sq) {
@@ -1080,10 +1122,7 @@ function initSqueegeDrag(sq) {
   const onStart = (clientX) => {
     const A = factorA();
     if (!A.total) return;
-    
-    // STRICT LOCK
     if (sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo' || sweepState === 'stopped-to' || sweepState === 'regrouping-to' || sweepState === 'record-tens-to' || sweepState === 'record-hundreds-to' || sweepState === 'phase-1-done') return; 
-
     dragging = true;
     startClientX = clientX;
     startSweepX  = sweepX;
@@ -1093,8 +1132,6 @@ function initSqueegeDrag(sq) {
 
   const onMove = (clientX) => {
     if (!dragging) return;
-
-    // STRICT LOCK FORCED ABORT
     if (sweepState === 'stopped-oo' || sweepState === 'regrouping-oo' || sweepState === 'record-ones-oo' || sweepState === 'record-carry-oo' || sweepState === 'stopped-to' || sweepState === 'regrouping-to' || sweepState === 'record-tens-to' || sweepState === 'record-hundreds-to' || sweepState === 'phase-1-done') {
       dragging = false; sq.style.cursor = ''; return;
     }
@@ -1123,14 +1160,11 @@ function initSqueegeDrag(sq) {
     if (!dragging) return;
     dragging = false;
     sq.style.cursor = '';
-    const A = factorA();
-    const B = factorB();
-    const C = cp();
+    const A = factorA(), B = factorB(), C = cp();
     if (sweepState !== 'stopped-oo' && sweepState !== 'stopped-to') {
       sq.classList.add('pulsing');
     }
-    renderSweepFill(C, A, B);
-    updateSqPosition();
+    renderSweepFill(C, A, B); updateSqPosition();
   };
 
   sq.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX); });
@@ -1141,25 +1175,105 @@ function initSqueegeDrag(sq) {
   document.addEventListener('touchend', onEnd);
 }
 
+// ==========================================
+// PHASE 2: SQUEEGEE (Blue)
+// ==========================================
+function startPhase2() {
+    const A = factorA(), B = factorB(), C = cp(), R = rp();
+    if (B.T > 0) {
+        sweepState = 'ready-2';
+        sweepX2 = A.total * C;
+        document.getElementById('pp2').classList.add('lit');
+        document.getElementById('pp1').classList.remove('lit'); 
+        placeSqueegee2(C, R, A, B);
+    } else {
+        startSumPhase();
+    }
+}
+
+function placeSqueegee2(C, R, A, B) {
+    let sq2 = document.getElementById('sq-tens');
+    if (!sq2) {
+        sq2 = document.createElement('div');
+        sq2.id = 'sq-tens';
+        sq2.className = 'squeegee sq-tens pulsing';
+        document.getElementById('gCanvas').appendChild(sq2);
+        initSqueegeDrag2(sq2);
+    }
+    sq2.style.top = R + 'px';
+    sq2.style.height = (B.tens * C) + 'px';
+    sq2.style.width = '6px';
+    sq2.style.display = 'block';
+    sq2.style.left = (sweepX2 - 3) + 'px';
+    
+    const locked2 = (sweepState === 'stopped-ot' || sweepState === 'regrouping-ot' || sweepState === 'record-tens-ot' || sweepState === 'record-carry-ot' || sweepState === 'stopped-tt' || sweepState === 'regrouping-tt' || sweepState === 'record-hundreds-tt' || sweepState === 'record-thousands-tt' || sweepState === 'phase-2-done');
+    sq2.classList.toggle('locked', locked2);
+    sq2.classList.toggle('pulsing', sweepState === 'ready-2' || sweepState === 'harvested-ot');
+}
+
+function initSqueegeDrag2(sq2) {
+    let dragging = false; let startClientX, startSweepX;
+    
+    const onStart = (clientX) => {
+        if (!['ready-2', 'harvested-ot'].includes(sweepState)) return;
+        dragging = true; startClientX = clientX; startSweepX = sweepX2;
+        sq2.classList.remove('pulsing'); sq2.style.cursor = 'grabbing';
+    };
+    
+    const onMove = (clientX) => {
+        if (!dragging) return;
+        const C = cp(), A = factorA(), B = factorB();
+        let newX = startSweepX + (clientX - startClientX);
+        
+        if (sweepState === 'ready-2' || sweepState === 'sweeping-ot') {
+            newX = Math.min(A.total * C, newX);
+            const stopX = A.T > 0 ? A.tens * C : 0;
+            if (newX <= stopX) {
+                newX = stopX; sweepState = 'stopped-ot'; dragging = false; sq2.style.cursor = '';
+                showHarvestFill2(C, A, B);
+            } else { sweepState = 'sweeping-ot'; }
+        } else if (sweepState === 'harvested-ot' || sweepState === 'sweeping-tt') {
+            newX = Math.min(A.tens * C, newX);
+            newX = Math.max(0, newX);
+            if (newX === 0) {
+                newX = 0; sweepState = 'stopped-tt'; dragging = false; sq2.style.cursor = '';
+                showHarvestFill2(C, A, B);
+            } else { sweepState = 'sweeping-tt'; }
+        }
+        sweepX2 = newX; renderSweepFill2(C, A, B);
+        sq2.style.left = (sweepX2 - 3) + 'px';
+    };
+    
+    const onEnd = () => {
+        if (!dragging) return;
+        dragging = false; sq2.style.cursor = '';
+        if (['ready-2', 'harvested-ot'].includes(sweepState)) sq2.classList.add('pulsing');
+    };
+    
+    sq2.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX); });
+    document.addEventListener('mousemove', e => onMove(e.clientX));
+    document.addEventListener('mouseup', onEnd);
+    sq2.addEventListener('touchstart', e => { e.preventDefault(); onStart(e.touches[0].clientX); }, {passive:false});
+    document.addEventListener('touchmove', e => { if(dragging) { e.preventDefault(); onMove(e.touches[0].clientX); } }, {passive:false});
+    document.addEventListener('touchend', onEnd);
+}
+
 function updateSqPosition() {
   const sq = document.getElementById('sq-ones');
-  if (!sq) return;
-  sq.style.left = (sweepX - 3) + 'px';
+  if (sq) sq.style.left = (sweepX - 3) + 'px';
+  const sq2 = document.getElementById('sq-tens');
+  if (sq2) sq2.style.left = (sweepX2 - 3) + 'px';
 }
 
 function renderSweepFill(C, A, B) {
-  document.querySelectorAll('.sweep-fill').forEach(e=>e.remove());
-
+  document.querySelectorAll('.sweep-fill.p1').forEach(e=>e.remove());
   if (!A.total || !B.total) return;
-  if (sweepState==='idle'||sweepState==='ready') return;
-  if (sweepState==='stopped-oo'||sweepState==='stopped-to') return; 
-  if (sweepState==='done') return;
+  if (sweepState==='idle'||sweepState==='ready'||sweepState==='done') return;
 
   const az = document.getElementById('arrayZone');
-
   const makeBlockWrapper = (cls, left, top, w, h, blockType, count, cols, fullW) => {
     const wrapper = document.createElement('div');
-    wrapper.className = 'sweep-fill ' + cls;
+    wrapper.className = 'sweep-fill p1 ' + cls;
     wrapper.style.left     = left + 'px';
     wrapper.style.top      = top  + 'px';
     wrapper.style.width    = w + 'px';
@@ -1190,69 +1304,122 @@ function renderSweepFill(C, A, B) {
     const fillW     = fillRight - fillLeft;
     const fillTop   = B.tens * C;
     const fillH     = B.ones * C; 
-    if (fillW > 0 && fillH > 0) {
-      az.appendChild(makeBlockWrapper('oo', fillLeft, fillTop, fillW, fillH, 'cube', A.ones * B.ones, A.ones, A.ones * C));
-    }
+    if (fillW > 0 && fillH > 0) az.appendChild(makeBlockWrapper('oo', fillLeft, fillTop, fillW, fillH, 'cube', A.ones * B.ones, A.ones, A.ones * C));
   }
-
   if (sweepState==='sweeping-to') {
     const fillLeft  = sweepX;
     const fillRight = A.tens * C;
     const fillW     = fillRight - fillLeft;
     const fillTop   = B.tens * C;
     const fillH     = B.ones * C;
-    if (fillW > 0 && fillH > 0) {
-      az.appendChild(makeBlockWrapper('to', fillLeft, fillTop, fillW, fillH, 'ten-bar', A.T * B.ones, A.T, A.T * C));
+    if (fillW > 0 && fillH > 0) az.appendChild(makeBlockWrapper('to', fillLeft, fillTop, fillW, fillH, 'ten-bar', A.T * B.ones, A.T, A.T * C));
+  }
+}
+
+function renderSweepFill2(C, A, B) {
+  document.querySelectorAll('.sweep-fill.p2').forEach(e=>e.remove());
+  if (!A.total || !B.total) return;
+  if (!['ready-2', 'sweeping-ot', 'sweeping-tt', 'stopped-ot', 'stopped-tt'].includes(sweepState)) return;
+  
+  const az = document.getElementById('arrayZone');
+  const makeBlockWrapper = (cls, left, top, w, h, blockType, count, cols, fullW) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'sweep-fill p2 ' + cls;
+    wrapper.style.left     = left + 'px';
+    wrapper.style.top      = top  + 'px';
+    wrapper.style.width    = w + 'px';
+    wrapper.style.height   = h + 'px';
+    wrapper.style.overflow = 'hidden';
+    wrapper.style.background = 'none';
+
+    const inner = document.createElement('div');
+    inner.style.position = 'absolute';
+    inner.style.right = '0';
+    inner.style.top = '0';
+    inner.style.width = fullW + 'px';
+    inner.style.height = h + 'px';
+    inner.style.display = 'grid';
+    inner.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    inner.style.placeItems = 'center';
+
+    for (let i = 0; i < count; i++) {
+      inner.appendChild(makeBlockEl(blockType));
     }
+    wrapper.appendChild(inner);
+    return wrapper;
+  };
+
+  if (sweepState === 'sweeping-ot') {
+    const fillLeft = sweepX2; const fillW = (A.total * C) - fillLeft;
+    const fillTop = 0; const fillH = B.tens * C;
+    if (fillW > 0 && fillH > 0) az.appendChild(makeBlockWrapper('ot', fillLeft, fillTop, fillW, fillH, 'ten-bar-v', A.ones * B.T, A.ones, A.ones * C)); 
+  }
+  if (sweepState === 'sweeping-tt') {
+    const fillLeft = sweepX2; const fillW = (A.tens * C) - fillLeft;
+    const fillTop = 0; const fillH = B.tens * C;
+    if (fillW > 0 && fillH > 0) az.appendChild(makeBlockWrapper('tt', fillLeft, fillTop, fillW, fillH, 'hundred-flat', A.T * B.T, A.T, A.T * C));
   }
 }
 
 function showHarvestFill(C, A, B) {
-  document.querySelectorAll('.harvest-fill').forEach(e=>e.remove());
+  document.querySelectorAll('.harvest-fill.p1').forEach(e=>e.remove());
   const az = document.getElementById('arrayZone');
 
   if (sweepState === 'stopped-oo') {
-    const x = A.tens * C;
-    const y = B.tens * C;
-    const w = A.ones * C;
-    const h = B.ones * C;
-    const val = A.ones * B.ones;
+    const x = A.tens * C, y = B.tens * C, w = A.ones * C, h = B.ones * C, val = A.ones * B.ones;
     if (w > 0 && h > 0) {
-      const hf = makeHarvestFill('oo', x, y, w, h, val, C, A.ones);
+      const hf = makeHarvestFill('oo p1', x, y, w, h, val, C, A.ones);
       az.appendChild(hf);
       hf.addEventListener('click', () => harvestQuadrant('oo', val, A, B, C));
     }
   } else if (sweepState === 'stopped-to') {
-    const x = 0;
-    const y = B.tens * C;
-    const w = A.tens * C;
-    const h = B.ones * C;
-    const val = A.tens * B.ones;
+    const x = 0, y = B.tens * C, w = A.tens * C, h = B.ones * C, val = A.tens * B.ones;
     if (w > 0 && h > 0) {
-      const hf = makeHarvestFill('to', x, y, w, h, val, C, A.T);
+      const hf = makeHarvestFill('to p1', x, y, w, h, val, C, A.T);
       az.appendChild(hf);
       hf.addEventListener('click', () => harvestQuadrant('to', val, A, B, C));
     }
   }
 }
 
+function showHarvestFill2(C, A, B) {
+  document.querySelectorAll('.harvest-fill.p2').forEach(e=>e.remove());
+  const az = document.getElementById('arrayZone');
+
+  if (sweepState === 'stopped-ot') {
+      const w = A.ones * C, h = B.tens * C, val = A.ones * B.tens;
+      if (w > 0 && h > 0) {
+          const hf = makeHarvestFill('ot p2', A.tens * C, 0, w, h, val, C, A.ones); 
+          az.appendChild(hf);
+          hf.addEventListener('click', () => harvestQuadrant2('ot', val, A, B, C));
+      }
+  } else if (sweepState === 'stopped-tt') {
+      const w = A.tens * C, h = B.tens * C, val = A.tens * B.tens;
+      if (w > 0 && h > 0) {
+          const hf = makeHarvestFill('tt p2', 0, 0, w, h, val, C, A.T);
+          az.appendChild(hf);
+          hf.addEventListener('click', () => harvestQuadrant2('tt', val, A, B, C));
+      }
+  }
+}
+
 function makeHarvestFill(cls, x, y, w, h, val, C, cols) {
   const el = document.createElement('div');
   el.className = 'harvest-fill ' + cls;
-  el.style.left   = x + 'px';
-  el.style.top    = y + 'px';
-  el.style.width  = w + 'px';
-  el.style.height = h + 'px';
+  el.style.left   = x + 'px'; el.style.top = y + 'px';
+  el.style.width  = w + 'px'; el.style.height = h + 'px';
   el.style.display = 'grid';
   el.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
   el.style.placeItems = 'center';
   el.style.background = 'none';
 
-  const blockType  = cls === 'oo' ? 'cube' : 'ten-bar';
-  const blockCount = cls === 'oo' ? val : Math.floor(val / 10);
-  for (let i = 0; i < blockCount; i++) {
-    el.appendChild(makeBlockEl(blockType));
-  }
+  let blockType, blockCount;
+  if (cls.includes('oo')) { blockType = 'cube'; blockCount = val; }
+  else if (cls.includes('to')) { blockType = 'ten-bar'; blockCount = Math.floor(val/10); }
+  else if (cls.includes('ot')) { blockType = 'ten-bar-v'; blockCount = Math.floor(val/10); }
+  else if (cls.includes('tt')) { blockType = 'hundred-flat'; blockCount = Math.floor(val/100); }
+
+  for (let i = 0; i < blockCount; i++) el.appendChild(makeBlockEl(blockType));
   return el;
 }
 
@@ -1267,6 +1434,10 @@ function renderGhosts(C, A, B) {
       qx = A.tens * C; qy = B.tens * C; qw = A.ones * C; qh = B.ones * C;
     } else if (g.cls === 'to') {
       qx = 0; qy = B.tens * C; qw = A.tens * C; qh = B.ones * C;
+    } else if (g.cls === 'ot') {
+      qx = A.tens * C; qy = 0; qw = A.ones * C; qh = B.tens * C;
+    } else if (g.cls === 'tt') {
+      qx = 0; qy = 0; qw = A.tens * C; qh = B.tens * C;
     }
     const ghost = document.createElement('div');
     ghost.className = 'quad-ghost ' + g.cls;
@@ -1281,53 +1452,64 @@ function renderGhosts(C, A, B) {
 }
 
 function harvestQuadrant(cls, val, A, B, C) {
-  document.querySelectorAll('.harvest-fill').forEach(e=>e.remove());
-
+  document.querySelectorAll('.harvest-fill.p1').forEach(e=>e.remove());
   const az = document.getElementById('arrayZone');
 
   let qx,qy,qw,qh;
-  if (cls === 'oo') {
-    qx = A.tens*C; qy = B.tens*C;
-    qw = A.ones*C; qh = B.ones*C;
-  } else {
-    qx = 0; qy = B.tens*C;
-    qw = A.tens*C; qh = B.ones*C;
-  }
+  if (cls === 'oo') { qx = A.tens*C; qy = B.tens*C; qw = A.ones*C; qh = B.ones*C; } 
+  else { qx = 0; qy = B.tens*C; qw = A.tens*C; qh = B.ones*C; }
 
   const azRect = az.getBoundingClientRect();
   const originX = azRect.left + qx + (qw / 2);
   const originY = azRect.top + qy + (qh / 2);
 
-  // Store data-driven ghost instead of manual DOM node
-  activeGhosts.push({ cls, val });
-  renderGhosts(C, A, B);
+  activeGhosts.push({ cls, val }); renderGhosts(C, A, B);
 
   const blockType = (cls === 'oo') ? 'cube' : 'ten-bar';
   const binType   = (cls === 'oo') ? 'ones' : 'tens';
-
   const blockCount = (cls === 'oo') ? (A.O * B.O) : (A.T * B.O);
+  
   spawnBlocks(blockType, blockCount, binType, originX, originY);
 
   if (cls === 'oo') {
     sweepState = 'regrouping-oo';
     const sq = document.getElementById('sq-ones');
-    if (sq) {
-      sq.classList.add('locked');
-      sq.style.pointerEvents = 'none';
-      sq.classList.remove('pulsing');
-    }
+    if (sq) { sq.classList.add('locked'); sq.style.pointerEvents = 'none'; sq.classList.remove('pulsing'); }
   } else if (cls === 'to') {
     sweepState = 'regrouping-to';
     const sq = document.getElementById('sq-ones');
-    if (sq) { 
-        sq.classList.remove('pulsing'); 
-        sq.classList.add('locked'); 
-        sq.style.opacity = '.25'; 
-        sq.style.pointerEvents = 'none'; 
-    }
+    if (sq) { sq.classList.remove('pulsing'); sq.classList.add('locked'); sq.style.opacity = '.25'; sq.style.pointerEvents = 'none'; }
   }
 
   renderSweepFill(C, A, B);
+}
+
+function harvestQuadrant2(cls, val, A, B, C) {
+    document.querySelectorAll('.harvest-fill.p2').forEach(e=>e.remove());
+    const az = document.getElementById('arrayZone');
+    
+    let qx, qy, qw, qh;
+    if (cls === 'ot') { qx = A.tens*C; qy = 0; qw = A.ones*C; qh = B.tens*C; } 
+    else { qx = 0; qy = 0; qw = A.tens*C; qh = B.tens*C; }
+    
+    activeGhosts.push({ cls, val }); renderGhosts(C, A, B);
+
+    const originX = az.getBoundingClientRect().left + qx + (qw/2);
+    const originY = az.getBoundingClientRect().top + qy + (qh/2);
+
+    let blockType, binType, blockCount;
+    if (cls === 'ot') {
+        blockType = 'ten-bar-v'; binType = 'tens'; blockCount = A.O * B.T;
+        sweepState = 'regrouping-ot';
+    } else {
+        blockType = 'hundred-flat'; binType = 'hundreds'; blockCount = A.T * B.T;
+        sweepState = 'regrouping-tt';
+    }
+    spawnBlocks(blockType, blockCount, binType, originX, originY);
+    
+    const sq = document.getElementById('sq-tens');
+    if (sq) { sq.classList.add('locked'); sq.style.pointerEvents = 'none'; sq.classList.remove('pulsing'); }
+    renderSweepFill2(C, A, B);
 }
 
 function makeBlockEl(type) {
@@ -1349,6 +1531,7 @@ function getBlockSize(type) {
   const cell = parseFloat(style.getPropertyValue('--cell')) || 14;
   if (type === 'cube')         return { w: cubeBase,      h: cubeBase };
   if (type === 'ten-bar')      return { w: cell * 10,     h: cubeBase };
+  if (type === 'ten-bar-v')    return { w: cubeBase,      h: cell * 10 };
   if (type === 'hundred-flat') return { w: cell * 10,     h: cell * 10 };
   if (type === 'thousand-cube')return { w: cubeBase * 10, h: cubeBase * 10 };
   return { w: 14, h: 14 };
@@ -1394,7 +1577,8 @@ function spawnBlocks(type, count, binType, originX, originY) {
 
         setTimeout(() => {
           fly.remove();
-          const block = makeBlockEl(type);
+          const settleType = (type === 'ten-bar-v') ? 'ten-bar' : type;
+          const block = makeBlockEl(settleType);
           block.classList.add('block-settle');
           binEl.appendChild(block);
           const badge = binEl.querySelector('.bin-count');
@@ -1424,13 +1608,13 @@ function checkOverflows() {
 
   bins.forEach(({ el, count, type }) => {
     const blocks = el.querySelectorAll('.cube, .ten-bar, .hundred-flat');
-    // Strip old classes
     blocks.forEach(b => b.classList.remove('ready-to-fuse'));
 
     if (count >= 10) {
       anyOverflow = true;
-      // Highlight the first complete set of 10 blocks
-      for (let i = 0; i < 10; i++) {
+      // Highlight ALL complete sets of 10 blocks (not just the first 10)
+      const completeGroups = Math.floor(count / 10);
+      for (let i = 0; i < completeGroups * 10; i++) {
         if (blocks[i]) blocks[i].classList.add('ready-to-fuse');
       }
     }
@@ -1441,72 +1625,75 @@ function checkOverflows() {
 
   const sq = document.getElementById('sq-ones');
   if (sq && anyOverflow && (sweepState === 'regrouping-oo' || sweepState === 'regrouping-to')) {
-    sq.classList.add('locked');
-    sq.style.pointerEvents = 'none';
-    sq.classList.remove('pulsing');
+    sq.classList.add('locked'); sq.style.pointerEvents = 'none'; sq.classList.remove('pulsing');
   }
 
-  // Phase 1 Recording Progressions
   if (sweepState === 'regrouping-oo' && !anyOverflow) {
-    sweepState = 'record-ones-oo';
-    document.getElementById('binO').classList.add('record-pulse');
+    sweepState = 'record-ones-oo'; document.getElementById('binO').classList.add('record-pulse');
   } else if (sweepState === 'regrouping-to' && !anyOverflow) {
-    sweepState = 'record-tens-to';
-    document.getElementById('binT').classList.add('record-pulse');
+    sweepState = 'record-tens-to'; document.getElementById('binT').classList.add('record-pulse');
+  } else if (sweepState === 'regrouping-ot' && !anyOverflow) {
+    sweepState = 'record-tens-ot'; document.getElementById('binT').classList.add('record-pulse');
+  } else if (sweepState === 'regrouping-tt' && !anyOverflow) {
+    sweepState = 'record-hundreds-tt'; document.getElementById('binH').classList.add('record-pulse');
   }
 
-  // Auto-open drawer if actions are needed
   if (anyOverflow || sweepState.includes('record')) {
     document.getElementById('dashDrawer').classList.add('open');
   }
 }
 
-function triggerRegroup(binEl, binType) {
+function checkDrawerRetract() {
+    if (binOnes === 0 && binTens === 0 && binHundreds === 0 && binThousands === 0) {
+        document.getElementById('dashDrawer').classList.remove('open');
+    }
+}
+
+function startSumPhase() {
+    sweepState = 'sum-phase';
+    document.getElementById('sumLine').classList.add('lit');
+    document.getElementById('totalRow').classList.add('lit');
+    document.getElementById('pp1').classList.remove('lit');
+    document.getElementById('pp2').classList.remove('lit');
+    checkDrawerRetract();
+}
+
+// CAPTURE ORIGIN RECT FOR PHYSICAL ILLUSION
+function triggerRegroup(binEl, binType, originRect) {
   let toEl, carryClass;
   if (binType === 'ones') {
     if (binOnes < 10) return;
-    binOnes -= 10;
-    toEl      = document.getElementById('binT');
-    binTens  += 1;
-    carryClass = 'ten-bar';
+    binOnes -= 10; toEl = document.getElementById('binT'); binTens += 1; carryClass = 'ten-bar';
   } else if (binType === 'tens') {
     if (binTens < 10) return;
-    binTens -= 10;
-    toEl      = document.getElementById('binH');
-    binHundreds += 1;
-    carryClass  = 'hundred-flat';
+    binTens -= 10; toEl = document.getElementById('binH'); binHundreds += 1; carryClass = 'hundred-flat';
   } else if (binType === 'hundreds') {
     if (binHundreds < 10) return;
-    binHundreds -= 10;
-    toEl      = document.getElementById('binTh');
-    binThousands += 1;
-    carryClass  = 'thousand-cube';
-  } else {
-    return;
-  }
+    binHundreds -= 10; toEl = document.getElementById('binTh'); binThousands += 1; carryClass = 'thousand-cube';
+  } else return;
 
   rebuildBinDOM(binEl, binType);
 
-  const fromRect = binEl.getBoundingClientRect();
+  const binRect  = binEl.getBoundingClientRect();
   const toRect   = toEl.getBoundingClientRect();
   const sz       = getBlockSize(carryClass);
   const halfW    = sz.w / 2, halfH = sz.h / 2;
+
+  // Set the animation origin precisely to the clicked row!
+  const startX = binRect.left + binRect.width / 2;
+  const startY = originRect ? originRect.top + originRect.height / 2 : binRect.top + binRect.height / 2;
 
   const carry = document.createElement('div');
   carry.className = `carry-fly ${carryClass}`;
   
   if (carryClass === 'hundred-flat') {
-    for (let s = 0; s < 100; s++) {
-      const seg = document.createElement('div');
-      seg.className = 'hund-seg';
-      carry.appendChild(seg);
-    }
+    for (let s = 0; s < 100; s++) { const seg = document.createElement('div'); seg.className = 'hund-seg'; carry.appendChild(seg); }
   }
 
   carry.style.width      = sz.w + 'px';
   carry.style.height     = sz.h + 'px';
-  carry.style.left       = (fromRect.left + fromRect.width/2  - halfW) + 'px';
-  carry.style.top        = (fromRect.top  + fromRect.height/2 - halfH) + 'px';
+  carry.style.left       = (startX - halfW) + 'px';
+  carry.style.top        = (startY - halfH) + 'px';
   carry.style.transition = 'none';
   document.body.appendChild(carry);
 
@@ -1540,10 +1727,7 @@ function rebuildBinDOM(binEl, binType) {
   const logCount   = binType==='ones' ? binOnes : binType==='tens' ? binTens : binType==='hundreds' ? binHundreds : binThousands;
 
   binEl.querySelectorAll('.cube, .ten-bar, .hundred-flat, .thousand-cube').forEach(e=>e.remove());
-
-  for (let i = 0; i < logCount; i++) {
-    binEl.appendChild(makeBlockEl(blockClass));
-  }
+  for (let i = 0; i < logCount; i++) binEl.appendChild(makeBlockEl(blockClass));
   const badge = binEl.querySelector('.bin-count');
   if (badge) binEl.appendChild(badge);
 }
@@ -1551,10 +1735,7 @@ function rebuildBinDOM(binEl, binType) {
 function updateBinCounts() {
   const setCount = (id, n) => {
     const el = document.getElementById(id);
-    if(el) {
-        el.textContent = n;
-        el.classList.toggle('show', n > 0);
-    }
+    if(el) { el.textContent = n; el.classList.toggle('show', n > 0); }
   };
   setCount('cntTh', binThousands);
   setCount('cntH', binHundreds);
@@ -1563,80 +1744,50 @@ function updateBinCounts() {
 }
 
 const _prev = {};
-
-function updateAlg(A, B) {
-  _setFactor(A, 'aA_T','aA_O');
-  _setFactor(B, 'aB_T','aB_O');
-}
-
+function updateAlg(A, B) { _setFactor(A, 'aA_T','aA_O'); _setFactor(B, 'aB_T','aB_O'); }
 function _setFactor(f, tId, oId) {
-  const tel = document.getElementById(tId);
-  const oel = document.getElementById(oId);
+  const tel = document.getElementById(tId), oel = document.getElementById(oId);
   if (!tel||!oel) return;
   if (!f.total) { tel.textContent=''; oel.textContent=''; return; }
-  if (f.T > 0) {
-    _popAD(tId, f.T, 't');
-    _popAD(oId, f.O, 'o');
-  } else {
-    tel.textContent = '';
-    _popAD(oId, f.O, 'o');
-  }
+  if (f.T > 0) { _popAD(tId, f.T, 't'); _popAD(oId, f.O, 'o'); } 
+  else { tel.textContent = ''; _popAD(oId, f.O, 'o'); }
 }
-
 function _popAD(id, val, col) {
-  const el = document.getElementById(id);
-  if (!el) return;
+  const el = document.getElementById(id); if (!el) return;
   const s = val===''||val===null?'':String(val);
   if (_prev[id]===s) return;
-  _prev[id]=s;
-  el.textContent=s;
-  el.className='ad '+col;
+  _prev[id]=s; el.textContent=s; el.className='ad '+col;
   if (s!=='') { el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),400); }
 }
 
 function buildBanks() {
-  const bT = document.getElementById('bankTop');
-  const bR = document.getElementById('bankRight');
+  const bT = document.getElementById('bankTop'), bR = document.getElementById('bankRight');
   bT.innerHTML=''; bR.innerHTML='';
-  bT.appendChild(makeSrc('ten','h'));
-  bT.appendChild(makeSrc('one','h'));
-  bR.appendChild(makeSrc('ten','v'));
-  bR.appendChild(makeSrc('one','v'));
+  bT.appendChild(makeSrc('ten','h')); bT.appendChild(makeSrc('one','h'));
+  bR.appendChild(makeSrc('ten','v')); bR.appendChild(makeSrc('one','v'));
 }
 
 function makeSrc(kind, axis) {
   const el = document.createElement('div');
-  el.className = `src src-${kind}-${axis}`;
-  el.draggable = true;
-  el.title = kind==='ten'?'10':'1';
-  el.addEventListener('dragstart', e => {
-    e.dataTransfer.setData('kind', kind);
-    e.dataTransfer.setData('axis', axis);
-    e.dataTransfer.effectAllowed = 'copy';
-  });
-  el.addEventListener('click', () => {
-    if (axis==='h') addTop(kind==='ten'?10:1);
-    else            addRight(kind==='ten'?10:1);
-  });
+  el.className = `src src-${kind}-${axis}`; el.draggable = true; el.title = kind==='ten'?'10':'1';
+  el.addEventListener('dragstart', e => { e.dataTransfer.setData('kind', kind); e.dataTransfer.setData('axis', axis); e.dataTransfer.effectAllowed = 'copy'; });
+  el.addEventListener('click', () => { if (axis==='h') addTop(kind==='ten'?10:1); else addRight(kind==='ten'?10:1); });
   return el;
 }
 
-// BINS CLICK LOGIC
-document.getElementById('binO').addEventListener('click', () => {
-  if (binOnes >= 10) triggerRegroup(document.getElementById('binO'), 'ones');
+// BINS CLICK LOGIC (Capture Target Rects!)
+document.getElementById('binO').addEventListener('click', e => {
+  if (binOnes >= 10 && !sweepState.includes('record-ones')) {
+    const tgt = e.target.closest('.ready-to-fuse');
+    triggerRegroup(document.getElementById('binO'), 'ones', tgt ? tgt.getBoundingClientRect() : null);
+  }
   else if (sweepState === 'record-ones-oo') {
     document.getElementById('binO').classList.remove('record-pulse');
-    _popAD('p1_O', binOnes, 'o'); // Record ones in algorithm
-    document.getElementById('pp1').classList.add('lit');
-    
-    // VAPORIZE THE RECORDED ONES
-    binOnes = 0;
-    rebuildBinDOM(document.getElementById('binO'), 'ones');
-    updateBinCounts();
+    _popAD('p1_O', binOnes, 'o'); document.getElementById('pp1').classList.add('lit');
+    binOnes = 0; rebuildBinDOM(document.getElementById('binO'), 'ones'); updateBinCounts(); checkDrawerRetract();
     
     if (binTens > 0) {
-      sweepState = 'record-carry-oo';
-      document.getElementById('binT').classList.add('record-pulse');
+      sweepState = 'record-carry-oo'; document.getElementById('binT').classList.add('record-pulse');
     } else {
       sweepState = 'harvested-oo';
       const sq = document.getElementById('sq-ones');
@@ -1645,49 +1796,81 @@ document.getElementById('binO').addEventListener('click', () => {
   }
 });
 
-document.getElementById('binT').addEventListener('click', () => {
-  if (binTens >= 10 && sweepState !== 'record-carry-oo' && sweepState !== 'record-tens-to') {
-    triggerRegroup(document.getElementById('binT'), 'tens');
+document.getElementById('binT').addEventListener('click', e => {
+  if (binTens >= 10 && sweepState !== 'record-carry-oo' && sweepState !== 'record-tens-to' && sweepState !== 'record-tens-ot') {
+    const tgt = e.target.closest('.ready-to-fuse');
+    triggerRegroup(document.getElementById('binT'), 'tens', tgt ? tgt.getBoundingClientRect() : null);
   }
   else if (sweepState === 'record-carry-oo') {
     document.getElementById('binT').classList.remove('record-pulse');
-    _popAD('c_T', binTens, 't'); // Record carry
-    
-    // Carry recorded, unlock squeegee (Blocks physically stay in bin!)
+    _popAD('c_T', binTens, 't'); 
     sweepState = 'harvested-oo';
     const sq = document.getElementById('sq-ones');
     if (sq) { sq.classList.remove('locked'); sq.style.pointerEvents = 'auto'; sq.classList.add('pulsing'); }
   }
   else if (sweepState === 'record-tens-to') {
     document.getElementById('binT').classList.remove('record-pulse');
-    _popAD('p1_T', binTens, 't'); // Record partial product tens
-    
-    binTens = 0;
-    rebuildBinDOM(document.getElementById('binT'), 'tens');
-    updateBinCounts();
+    _popAD('p1_T', binTens, 't'); 
+    binTens = 0; rebuildBinDOM(document.getElementById('binT'), 'tens'); updateBinCounts(); checkDrawerRetract();
     
     if (binHundreds > 0) {
-      sweepState = 'record-hundreds-to';
-      document.getElementById('binH').classList.add('record-pulse');
+      sweepState = 'record-hundreds-to'; document.getElementById('binH').classList.add('record-pulse');
     } else {
-      sweepState = 'phase-1-done';
+      sweepState = 'phase-1-done'; startPhase2();
+    }
+  }
+  else if (sweepState === 'record-tens-ot') {
+    document.getElementById('binT').classList.remove('record-pulse');
+    _popAD('p2_T', binTens, 't'); 
+    binTens = 0; rebuildBinDOM(document.getElementById('binT'), 'tens'); updateBinCounts(); checkDrawerRetract();
+    
+    if (binHundreds > 0) {
+      sweepState = 'record-carry-ot'; document.getElementById('binH').classList.add('record-pulse');
+    } else {
+      sweepState = 'harvested-ot';
+      const sq2 = document.getElementById('sq-tens');
+      if (sq2) { sq2.classList.remove('locked'); sq2.style.pointerEvents = 'auto'; sq2.classList.add('pulsing'); }
     }
   }
 });
 
-document.getElementById('binH').addEventListener('click', () => {
-  if (binHundreds >= 10 && sweepState !== 'record-hundreds-to') {
-    if (typeof triggerRegroup === 'function') triggerRegroup(document.getElementById('binH'), 'hundreds');
+document.getElementById('binH').addEventListener('click', e => {
+  if (binHundreds >= 10 && sweepState !== 'record-hundreds-to' && sweepState !== 'record-carry-ot' && sweepState !== 'record-hundreds-tt') {
+    const tgt = e.target.closest('.ready-to-fuse');
+    triggerRegroup(document.getElementById('binH'), 'hundreds', tgt ? tgt.getBoundingClientRect() : null);
   }
   else if (sweepState === 'record-hundreds-to') {
     document.getElementById('binH').classList.remove('record-pulse');
-    _popAD('p1_H', binHundreds, 'h'); // Record partial product hundreds (Gold)
+    _popAD('p1_H', binHundreds, 'h'); 
+    binHundreds = 0; rebuildBinDOM(document.getElementById('binH'), 'hundreds'); updateBinCounts(); checkDrawerRetract();
+    sweepState = 'phase-1-done'; startPhase2();
+  }
+  else if (sweepState === 'record-carry-ot') {
+    document.getElementById('binH').classList.remove('record-pulse');
+    _popAD('c_H', binHundreds, 'h'); 
+    sweepState = 'harvested-ot';
+    const sq2 = document.getElementById('sq-tens');
+    if (sq2) { sq2.classList.remove('locked'); sq2.style.pointerEvents = 'auto'; sq2.classList.add('pulsing'); }
+  }
+  else if (sweepState === 'record-hundreds-tt') {
+    document.getElementById('binH').classList.remove('record-pulse');
+    _popAD('p2_H', binHundreds, 'h'); 
+    binHundreds = 0; rebuildBinDOM(document.getElementById('binH'), 'hundreds'); updateBinCounts(); checkDrawerRetract();
     
-    binHundreds = 0;
-    rebuildBinDOM(document.getElementById('binH'), 'hundreds');
-    updateBinCounts();
-    
-    sweepState = 'phase-1-done';
+    if (binThousands > 0) {
+      sweepState = 'record-thousands-tt'; document.getElementById('binTh').classList.add('record-pulse');
+    } else {
+      sweepState = 'phase-2-done'; startSumPhase();
+    }
+  }
+});
+
+document.getElementById('binTh').addEventListener('click', () => {
+  if (sweepState === 'record-thousands-tt') {
+    document.getElementById('binTh').classList.remove('record-pulse');
+    _popAD('p2_TH', binThousands, 't'); 
+    binThousands = 0; rebuildBinDOM(document.getElementById('binTh'), 'thousands'); updateBinCounts(); checkDrawerRetract();
+    sweepState = 'phase-2-done'; startSumPhase();
   }
 });
 
@@ -1697,22 +1880,18 @@ document.getElementById('gCanvas').addEventListener('dblclick', e => {
   const az     = document.getElementById('arrayZone');
   const svg    = document.getElementById('gridSVG');
   if (tgt===canvas||tgt===az||tgt===svg||tgt.tagName==='line') {
-    topSegs=[]; rightSegs=[];
-    activeGhosts=[]; // Clear ghosts
-    sweepState='idle'; sweepX=0;
+    topSegs=[]; rightSegs=[]; activeGhosts=[];
+    sweepState='idle'; sweepX=0; sweepX2=0;
     binOnes=0; binTens=0; binHundreds=0; binThousands=0;
     Object.keys(_prev).forEach(k=>delete _prev[k]);
-    ['c_T', 'c_O', 'p1_TH', 'p1_H', 'p1_T', 'p1_O', 'p2_TH', 'p2_H', 'p2_T', 't_TH', 't_H', 't_T', 't_O'].forEach(id => {
+    ['c_H', 'c_T', 'c_O', 'p1_TH', 'p1_H', 'p1_T', 'p1_O', 'p2_TH', 'p2_H', 'p2_T', 'p2_0', 't_TH', 't_H', 't_T', 't_O'].forEach(id => {
       const el = document.getElementById(id);
       if (el) { el.textContent = ''; el.className = 'ad ' + (id.includes('_T') ? 't' : id.includes('_H') ? 'h' : 'o'); }
     });
     document.querySelectorAll('.squeegee,.sweep-fill,.harvest-fill,.quad-ghost,.block-fly,.carry-fly').forEach(e=>e.remove());
     ['binO','binT','binH','binTh'].forEach(id => {
       const el = document.getElementById(id);
-      if(el) {
-          el.querySelectorAll('.cube,.ten-bar,.hundred-flat,.thousand-cube').forEach(e=>e.remove());
-          el.classList.remove('accepting', 'record-pulse');
-      }
+      if(el) { el.querySelectorAll('.cube,.ten-bar,.hundred-flat,.thousand-cube').forEach(e=>e.remove()); el.classList.remove('accepting', 'record-pulse'); }
     });
     document.getElementById('algLock').classList.remove('active');
     document.getElementById('dashDrawer').classList.remove('open');
@@ -1722,22 +1901,15 @@ document.getElementById('gCanvas').addEventListener('dblclick', e => {
 });
 
 document.getElementById('zoomSlider').addEventListener('input', e => {
-  const z = e.target.value;
-  document.documentElement.style.setProperty('--zoom', z);
-  buildBanks();
-  layout();
+  const z = e.target.value; document.documentElement.style.setProperty('--zoom', z); buildBanks(); layout();
 });
 
-// Drawer Handle Toggle Logic
 document.getElementById('drawerHandle').addEventListener('click', () => {
   document.getElementById('dashDrawer').classList.toggle('open');
 });
 
-// Initialize dynamic zoom defaults
 document.documentElement.style.setProperty('--zoom', 1);
-buildBanks();
-triggerAutoZoom();
-layout();
+buildBanks(); triggerAutoZoom(); layout();
 </script>
 </body>
 </html>
