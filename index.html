@@ -385,7 +385,6 @@
     .bin.ones-bin, .bin.hundreds-bin { 
       flex-wrap: wrap-reverse; 
       align-content: flex-start;
-      /* Buffer increased to 34px to prevent premature row wrapping */
       width: calc((var(--cube-base) * 10) + 34px); 
     }
     
@@ -411,28 +410,25 @@
     .bin.tens-bin.accepting     { border-color:var(--tens);     background:rgba(65,105,225,.05); }
     .bin.ones-bin.accepting     { border-color:var(--ones);     background:rgba(220,20,60,.05); }
 
-    /* Ones Record Pulse (Red) */
+    /* Record Pulses */
     .bin.ones-bin.record-pulse {
       border-color: var(--ones) !important;
       box-shadow: 0 0 15px 4px rgba(220, 20, 60, 0.35) !important;
       cursor: pointer;
       animation: recPulse 1s ease-in-out infinite alternate;
     }
-    /* Tens Record Pulse (Blue) */
     .bin.tens-bin.record-pulse {
       border-color: var(--tens) !important;
       box-shadow: 0 0 15px 4px rgba(65, 105, 225, 0.35) !important;
       cursor: pointer;
       animation: recPulse 1s ease-in-out infinite alternate;
     }
-    /* Hundreds Record Pulse (Gold) */
     .bin.hundreds-bin.record-pulse {
       border-color: var(--hundreds) !important;
       box-shadow: 0 0 15px 4px rgba(255, 215, 0, 0.35) !important;
       cursor: pointer;
       animation: recPulse 1s ease-in-out infinite alternate;
     }
-    /* Thousands Record Pulse (Green) */
     .bin.thousands-bin.record-pulse {
       border-color: var(--thousands) !important;
       box-shadow: 0 0 15px 4px rgba(76, 187, 23, 0.35) !important;
@@ -453,25 +449,21 @@
       filter: drop-shadow(0 3px 6px rgba(0,0,0,.28));
       cursor: grab;
       box-shadow: var(--shadow-block);
+      transition: opacity 0.2s; /* For row-fusing fades */
     }
 
-    /* CUBE (ones unit — red) */
     .cube {
         width: var(--cube-base); height: var(--cube-base); border-radius: calc(6px * var(--zoom));
         background: var(--ones-front); transform: rotateX(10deg); box-shadow: var(--shadow-block); position: relative; flex-shrink: 0 !important;
     }
-    /* TEN-BAR (tens unit — blue - Horizontal) */
     .ten-bar {
         width: calc(var(--cell) * 10); height: var(--cube-base); border-radius: calc(6px * var(--zoom));
         background: var(--tens-front); transform: rotateX(10deg); display: flex; box-shadow: var(--shadow-block); position: relative; flex-shrink: 0 !important;
     }
-    /* TEN-BAR-V (tens unit - Vertical for Phase 2 Array alignment) */
     .ten-bar-v {
         width: var(--cube-base); height: calc(var(--cell) * 10); border-radius: calc(6px * var(--zoom));
         background: var(--tens-front); transform: rotateX(10deg); display: flex; flex-direction: column; box-shadow: var(--shadow-block); position: relative; flex-shrink: 0 !important;
     }
-
-    /* HUNDRED-FLAT (hundreds — gold) */
     .hundred-flat {
       width:  calc(var(--cell) * 10);
       height: calc(var(--cell) * 10);
@@ -491,129 +483,70 @@
       box-shadow: 0 0 0 1px rgba(255,255,255,.1) inset;
     }
     .hund-seg::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--hund-top);
-      border-radius: 1px 1px 0 0;
-      transform: rotateX(-80deg) scaleY(0.45) translateY(-100%);
-      transform-origin: top center;
+      content: ''; position: absolute; inset: 0; background: var(--hund-top); border-radius: 1px 1px 0 0;
+      transform: rotateX(-80deg) scaleY(0.45) translateY(-100%); transform-origin: top center;
     }
-
-    /* THOUSAND-CUBE (thousands — green) */
     .thousand-cube {
-      width: calc(var(--cube-base) * 10);
-      height: calc(var(--cube-base) * 10);
-      background: var(--thousands-front);
-      border-radius: calc(8px * var(--zoom));
-      transform: rotateX(10deg);
-      box-shadow: 
-        calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 var(--thousands-side),
-        0 8px 24px rgba(0,0,0,0.2);
-      position: relative;
-      flex-shrink: 0 !important;
-      cursor: grab;
+      width: calc(var(--cube-base) * 10); height: calc(var(--cube-base) * 10);
+      background: var(--thousands-front); border-radius: calc(8px * var(--zoom)); transform: rotateX(10deg);
+      box-shadow: calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 var(--thousands-side), 0 8px 24px rgba(0,0,0,0.2);
+      position: relative; flex-shrink: 0 !important; cursor: grab;
     }
     .thousand-cube::before {
-      content: ''; position: absolute; inset: 0;
-      background: var(--thousands-top);
+      content: ''; position: absolute; inset: 0; background: var(--thousands-top);
       border-radius: calc(8px * var(--zoom)) calc(8px * var(--zoom)) 0 0;
-      transform: rotateX(-80deg) scaleY(0.45) translateY(-100%);
-      transform-origin: top center;
+      transform: rotateX(-80deg) scaleY(0.45) translateY(-100%); transform-origin: top center;
     }
 
     /* ── Flying block (fixed, animates to bin) ── */
     .block-fly {
-      position: fixed;
-      pointer-events: none;
-      z-index: 200;
-      transform: rotateX(10deg);
+      position: fixed; pointer-events: none; z-index: 200; transform: rotateX(10deg);
     }
     .block-fly.cube {
-      width: var(--cube-base);
-      height: var(--cube-base);
-      background: var(--ones-front);
-      border-radius: 2px;
-      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--ones-side),
-                  0 4px 10px rgba(0,0,0,.35);
+      width: var(--cube-base); height: var(--cube-base); background: var(--ones-front); border-radius: 2px;
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--ones-side), 0 4px 10px rgba(0,0,0,.35);
     }
     .block-fly.ten-bar {
-      width: calc(var(--cell) * 10);
-      height: var(--cube-base);
-      background: var(--tens-front);
-      border-radius: 3px;
-      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--tens-side),
-                  0 4px 10px rgba(0,0,0,.35);
+      width: calc(var(--cell) * 10); height: var(--cube-base); background: var(--tens-front); border-radius: 3px;
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--tens-side), 0 4px 10px rgba(0,0,0,.35);
     }
     .block-fly.ten-bar-v {
-      width: var(--cube-base);
-      height: calc(var(--cell) * 10);
-      background: var(--tens-front);
-      border-radius: 3px;
-      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--tens-side),
-                  0 4px 10px rgba(0,0,0,.35);
+      width: var(--cube-base); height: calc(var(--cell) * 10); background: var(--tens-front); border-radius: 3px;
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--tens-side), 0 4px 10px rgba(0,0,0,.35);
     }
     .block-fly.hundred-flat {
-      width: calc(var(--cell) * 10);
-      height: calc(var(--cell) * 10);
-      background: var(--hund-front);
-      border-radius: 3px;
-      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--hund-side),
-                  0 4px 10px rgba(0,0,0,.35);
+      width: calc(var(--cell) * 10); height: calc(var(--cell) * 10); background: var(--hund-front); border-radius: 3px;
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--hund-side), 0 4px 10px rgba(0,0,0,.35);
     }
     .block-fly.thousand-cube, .carry-fly.thousand-cube {
-      width: calc(var(--cube-base) * 10);
-      height: calc(var(--cube-base) * 10);
-      background: var(--thousands-front);
+      width: calc(var(--cube-base) * 10); height: calc(var(--cube-base) * 10); background: var(--thousands-front);
       border-radius: calc(8px * var(--zoom));
-      box-shadow: calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 var(--thousands-side),
-                  0 12px 30px rgba(0,0,0,0.4);
+      box-shadow: calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 var(--thousands-side), 0 12px 30px rgba(0,0,0,0.4);
     }
 
-    /* ── Settle pop-in ── */
-    .block-settle {
-      animation: blockSettle .3s var(--spring) both;
-    }
-    @keyframes blockSettle {
-      0%   { transform: rotateX(10deg) scale(0.35) translateY(8px); opacity: 0; }
-      100% { transform: rotateX(10deg) scale(1)    translateY(0);   opacity: 1; }
-    }
+    .block-settle { animation: blockSettle .3s var(--spring) both; }
+    @keyframes blockSettle { 0% { transform: rotateX(10deg) scale(0.35) translateY(8px); opacity: 0; } 100% { transform: rotateX(10deg) scale(1) translateY(0); opacity: 1; } }
 
     /* ── Carry fly (regroup) ── */
     .carry-fly {
-      position: fixed;
-      pointer-events: none;
-      z-index: 250;
-      transform: rotateX(10deg);
-      border-radius: 3px;
+      position: fixed; pointer-events: none; z-index: 250; transform: rotateX(10deg); border-radius: 3px;
     }
     .carry-fly.ten-bar {
-      width: calc(var(--cell) * 10);
-      height: var(--cube-base);
-      background: var(--tens-front);
-      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--tens-side),
-                  0 6px 18px rgba(0,0,0,.4);
+      width: calc(var(--cell) * 10); height: var(--cube-base); background: var(--tens-front);
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--tens-side), 0 6px 18px rgba(0,0,0,.4);
     }
     .carry-fly.hundred-flat {
-      width: calc(var(--cell) * 10);
-      height: calc(var(--cell) * 10);
-      background: var(--hund-front);
-      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--hund-side),
-                  0 6px 18px rgba(0,0,0,.4);
+      width: calc(var(--cell) * 10); height: calc(var(--cell) * 10); background: var(--hund-front);
+      box-shadow: calc(var(--depth)*0.7) calc(var(--depth)*-0.7) 0 var(--hund-side), 0 6px 18px rgba(0,0,0,.4);
     }
     .carry-fly.thousand-cube {
-      width: calc(var(--cube-base) * 10);
-      height: calc(var(--cube-base) * 10);
-      background: var(--thousands-front);
-      box-shadow: calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 var(--thousands-side),
-                  0 6px 18px rgba(0,0,0,.4);
+      width: calc(var(--cube-base) * 10); height: calc(var(--cube-base) * 10); background: var(--thousands-front);
+      box-shadow: calc(var(--cube-base) * 2) calc(var(--cube-base) * -2) 0 var(--thousands-side), 0 6px 18px rgba(0,0,0,.4);
     }
 
     /* ── FUSION CUE ── */
     .ready-to-fuse {
-        animation: fusePulse 1.2s infinite alternate;
-        cursor: pointer;
-        z-index: 10;
+        animation: fusePulse 1.2s infinite alternate; cursor: pointer; z-index: 10;
     }
     @keyframes fusePulse {
         0%   { filter: brightness(1) drop-shadow(0 0 0px rgba(57, 255, 20, 0)); transform: rotateX(10deg) scale(1); }
@@ -621,38 +554,19 @@
     }
 
     /* ── ALG PANEL LOCK OVERLAY ── */
-    .alg-panel {
-      position: relative;
-    }
+    .alg-panel { position: relative; }
     .alg-lock-overlay {
-      display: none;
-      position: absolute;
-      inset: 0;
-      background: rgba(245,245,247,0.76);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      z-index: 40;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 10px;
+      display: none; position: absolute; inset: 0; background: rgba(245,245,247,0.76);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 40;
+      align-items: center; justify-content: center; flex-direction: column; gap: 10px;
     }
     .alg-lock-overlay.active { display: flex; }
     .alg-lock-icon { font-size: 2rem; }
 
     .bin-count {
-      position: absolute;
-      bottom: -6px; right: -6px;
-      background: var(--text-main);
-      color: white;
-      font-size: .6rem;
-      font-weight: 800;
-      border-radius: 99px;
-      padding: 1px 6px;
-      min-width: 20px;
-      text-align: center;
-      opacity: 0;
-      transition: opacity .2s;
+      position: absolute; bottom: -6px; right: -6px; background: var(--text-main); color: white;
+      font-size: .6rem; font-weight: 800; border-radius: 99px; padding: 1px 6px; min-width: 20px;
+      text-align: center; opacity: 0; transition: opacity .2s;
     }
     .bin-count.show { opacity: 1; }
     .bin-divider { width: 1px; height: 50px; background: var(--border); align-self: center; }
@@ -661,59 +575,31 @@
        ALGORITHM PANEL
     ══════════════════════════════════════ */
     .alg-panel {
-      width: 170px;
-      flex-shrink: 0;
-      background: var(--glass);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border-left: 1.5px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      padding: 24px 16px;
-      overflow-y: auto;
+      width: 170px; flex-shrink: 0; background: var(--glass); backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px); border-left: 1.5px solid var(--border);
+      display: flex; flex-direction: column; align-items: flex-end; padding: 24px 16px; overflow-y: auto;
     }
-
     .alg-problem { width: 100%; display: flex; flex-direction: column; align-items: flex-end; gap: 1px; margin-bottom: 4px; }
-    
     .carry-row { margin-bottom: -6px; min-height: 20px; }
     .ad.carry { height: 20px; line-height: 20px; font-size: 1.2rem; }
-    
     .alg-row { display:flex; align-items:baseline; gap:0; }
     .alg-sym { font-size:1.9rem; font-weight:900; color:var(--text-light); line-height:42px; margin-right:2px; }
     .ad { width:30px; height:42px; text-align:center; line-height:42px; font-size:2.3rem; font-weight:800; letter-spacing:-0.04em; border-radius:8px; }
-    .ad.t   { color:var(--tens); }
-    .ad.o   { color:var(--ones); }
-    .ad.h   { color:var(--hundreds); }
+    .ad.t   { color:var(--tens); } .ad.o   { color:var(--ones); } .ad.h   { color:var(--hundreds); }
     .ad.pop { animation:dPop .35s var(--spring) both; }
     @keyframes dPop { 0% { transform:scale(.5) translateY(8px); opacity:0; } 100% { transform:scale(1)  translateY(0);   opacity:1; } }
     .alg-line { height:2.5px; background:var(--text-main); width:100%; border-radius:2px; margin:5px 0 4px; }
-
     .pp-section { width:100%; display:flex; flex-direction:column; gap:1px; margin-bottom:4px; }
     .pp-row { display:flex; align-items:baseline; justify-content:flex-end; gap:0; opacity:.12; transition:opacity .4s; }
     .pp-row.lit { opacity:1; }
     .pd { width:30px; height:42px; text-align:center; line-height:42px; font-size:2.3rem; font-weight:800; letter-spacing:-0.04em; color:var(--text-main); border-radius:8px; }
-    .pd.zero { color:var(--text-light); }
-    .pd.pop  { animation:dPop .35s var(--spring) both; }
-
+    .pd.zero { color:var(--text-light); } .pd.pop  { animation:dPop .35s var(--spring) both; }
     .sum-line { height:2.5px; background:var(--text-main); width:100%; border-radius:2px; margin:4px 0; opacity:.12; transition:opacity .4s; }
     .sum-line.lit { opacity:1; }
     .total-row { display:flex; align-items:baseline; justify-content:flex-end; gap:0; opacity:.12; transition:opacity .4s; margin-bottom:20px; }
     .total-row.lit { opacity:1; }
     .td { width:30px; height:50px; text-align:center; line-height:50px; font-size:2.8rem; font-weight:900; letter-spacing:-0.04em; color:var(--text-main); border-radius:8px; }
     .td.pop { animation:dPop .5s var(--spring) both; }
-
-    .dist-grid { width:100%; display:grid; grid-template-columns:1fr 1fr; gap:5px; opacity:0; transition:opacity .5s; }
-    .dist-grid.show { opacity:1; }
-    .dc { border-radius:10px; padding:7px 5px; display:flex; flex-direction:column; align-items:center; gap:2px; }
-    .dc.tt { background:rgba(46,125,50,.1); }
-    .dc.ot,.dc.to { background:rgba(65,105,225,.1); }
-    .dc.oo { background:rgba(220,20,60,.1); }
-    .dc-val { font-size:1rem; font-weight:800; letter-spacing:-0.04em; }
-    .dc.tt .dc-val { color:var(--hundreds); }
-    .dc.ot .dc-val,.dc.to .dc-val { color:var(--tens); }
-    .dc.oo .dc-val { color:var(--ones); }
-    .dc-eq { font-size:.58rem; font-weight:600; color:var(--text-gray); }
 
     .watermark { position:fixed; bottom:auto; top:16px; left:16px; font-weight:900; font-size:.8rem; letter-spacing:-0.05em; color:var(--text-light); pointer-events:none; z-index:100; }
     .wbead { width:.2em; height:.2em; border-radius:50%; display:inline-block; margin-left:.04em; margin-bottom:.07em; background:linear-gradient(135deg,#e0e0e0,#a0a0a0,#d0d0d0); box-shadow:0 1px 3px rgba(0,0,0,.2); }
@@ -804,12 +690,6 @@
       <div class="td" id="t_H"></div>
       <div class="td" id="t_T"></div>
       <div class="td" id="t_O"></div>
-    </div>
-    <div class="dist-grid" id="distGrid">
-      <div class="dc tt"><div class="dc-val" id="dm_tt"></div><div class="dc-eq" id="dm_tt_eq"></div></div>
-      <div class="dc ot"><div class="dc-val" id="dm_ot"></div><div class="dc-eq" id="dm_ot_eq"></div></div>
-      <div class="dc to"><div class="dc-val" id="dm_to"></div><div class="dc-eq" id="dm_to_eq"></div></div>
-      <div class="dc oo"><div class="dc-val" id="dm_oo"></div><div class="dc-eq" id="dm_oo_eq"></div></div>
     </div>
   </div>
 </div>
@@ -1180,6 +1060,7 @@ function initSqueegeDrag(sq) {
 // ==========================================
 function startPhase2() {
     const A = factorA(), B = factorB(), C = cp(), R = rp();
+    document.getElementById('dashDrawer').classList.remove('open');
     if (B.T > 0) {
         sweepState = 'ready-2';
         sweepX2 = A.total * C;
@@ -1659,7 +1540,7 @@ function startSumPhase() {
 }
 
 // CAPTURE ORIGIN RECT FOR PHYSICAL ILLUSION
-function triggerRegroup(binEl, binType, originRect) {
+function triggerRegroup(binEl, binType, rowBlocks) {
   let toEl, carryClass;
   if (binType === 'ones') {
     if (binOnes < 10) return;
@@ -1672,20 +1553,33 @@ function triggerRegroup(binEl, binType, originRect) {
     binHundreds -= 10; toEl = document.getElementById('binTh'); binThousands += 1; carryClass = 'thousand-cube';
   } else return;
 
-  rebuildBinDOM(binEl, binType);
+  // Instead of an immediate rebuild, visually hide the specific blocks to reserve space during slide
+  if (rowBlocks && rowBlocks.length === 10) {
+      rowBlocks.forEach(b => { b.style.visibility = 'hidden'; b.classList.remove('ready-to-fuse'); });
+  } else {
+      rebuildBinDOM(binEl, binType); // Fallback
+  }
 
-  const binRect  = binEl.getBoundingClientRect();
+  let startX, startY;
+  if (rowBlocks && rowBlocks.length === 10) {
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      rowBlocks.forEach(b => {
+          const r = b.getBoundingClientRect();
+          if(r.left < minX) minX = r.left; if(r.right > maxX) maxX = r.right;
+          if(r.top < minY) minY = r.top; if(r.bottom > maxY) maxY = r.bottom;
+      });
+      startX = (minX + maxX) / 2; startY = (minY + maxY) / 2;
+  } else {
+      const r = binEl.getBoundingClientRect();
+      startX = r.left + r.width/2; startY = r.top + r.height/2;
+  }
+
   const toRect   = toEl.getBoundingClientRect();
   const sz       = getBlockSize(carryClass);
   const halfW    = sz.w / 2, halfH = sz.h / 2;
 
-  // Set the animation origin precisely to the clicked row!
-  const startX = binRect.left + binRect.width / 2;
-  const startY = originRect ? originRect.top + originRect.height / 2 : binRect.top + binRect.height / 2;
-
   const carry = document.createElement('div');
   carry.className = `carry-fly ${carryClass}`;
-  
   if (carryClass === 'hundred-flat') {
     for (let s = 0; s < 100; s++) { const seg = document.createElement('div'); seg.className = 'hund-seg'; carry.appendChild(seg); }
   }
@@ -1698,35 +1592,43 @@ function triggerRegroup(binEl, binType, originRect) {
   document.body.appendChild(carry);
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    const dur = 420;
-    carry.style.transition = `left ${dur}ms var(--spring), top ${dur}ms var(--spring), opacity ${dur}ms`;
-    carry.style.left = (toRect.left + toRect.width/2  - halfW) + 'px';
-    carry.style.top  = (toRect.top  + toRect.height/2 - halfH) + 'px';
+    // Step 1: Slide horizontally IN THE SAME ROW
+    const targetX = toRect.left + toRect.width/2 - halfW;
+    const targetY = toRect.top + toRect.height/2 - halfH;
+
+    carry.style.transition = `left 280ms cubic-bezier(0.4, 0, 0.2, 1)`;
+    carry.style.left = targetX + 'px';
 
     setTimeout(() => {
-      carry.remove();
-      const block = makeBlockEl(carryClass);
-      block.classList.add('block-settle');
-      toEl.appendChild(block);
-      const badge = toEl.querySelector('.bin-count');
-      if (badge) toEl.appendChild(badge);
+      // Step 2: Drop into the bin
+      carry.style.transition = `top 300ms var(--spring)`;
+      carry.style.top = targetY + 'px';
 
-      toEl.classList.add('accepting');
-      setTimeout(() => toEl.classList.remove('accepting'), 360);
-      updateBinCounts();
-      checkOverflows();
-    }, dur);
+      setTimeout(() => {
+        carry.remove();
+        
+        // NOW we remove the hidden red blocks and drop the blue block into the DOM
+        rebuildBinDOM(binEl, binType);
+        const block = makeBlockEl(carryClass);
+        block.classList.add('block-settle');
+        toEl.appendChild(block);
+        const badge = toEl.querySelector('.bin-count');
+        if (badge) toEl.appendChild(badge);
+
+        toEl.classList.add('accepting');
+        setTimeout(() => toEl.classList.remove('accepting'), 360);
+        updateBinCounts();
+        checkOverflows();
+      }, 320); // wait for drop
+    }, 300); // wait for slide
   }));
-
-  updateBinCounts();
-  checkOverflows();
 }
 
 function rebuildBinDOM(binEl, binType) {
   const blockClass = binType==='ones' ? 'cube' : binType==='tens' ? 'ten-bar' : binType==='hundreds' ? 'hundred-flat' : 'thousand-cube';
   const logCount   = binType==='ones' ? binOnes : binType==='tens' ? binTens : binType==='hundreds' ? binHundreds : binThousands;
 
-  binEl.querySelectorAll('.cube, .ten-bar, .hundred-flat, .thousand-cube').forEach(e=>e.remove());
+  binEl.querySelectorAll('.cube, .ten-bar, .ten-bar-v, .hundred-flat, .thousand-cube').forEach(e=>e.remove());
   for (let i = 0; i < logCount; i++) binEl.appendChild(makeBlockEl(blockClass));
   const badge = binEl.querySelector('.bin-count');
   if (badge) binEl.appendChild(badge);
@@ -1775,11 +1677,16 @@ function makeSrc(kind, axis) {
   return el;
 }
 
-// BINS CLICK LOGIC (Capture Target Rects!)
+// BINS CLICK LOGIC (Capture Exact Row Array!)
 document.getElementById('binO').addEventListener('click', e => {
   if (binOnes >= 10 && !sweepState.includes('record-ones')) {
     const tgt = e.target.closest('.ready-to-fuse');
-    triggerRegroup(document.getElementById('binO'), 'ones', tgt ? tgt.getBoundingClientRect() : null);
+    if (tgt) {
+        const blocks = Array.from(document.getElementById('binO').querySelectorAll('.cube'));
+        const idx = blocks.indexOf(tgt);
+        const rowStart = Math.floor(idx / 10) * 10;
+        triggerRegroup(document.getElementById('binO'), 'ones', blocks.slice(rowStart, rowStart + 10));
+    }
   }
   else if (sweepState === 'record-ones-oo') {
     document.getElementById('binO').classList.remove('record-pulse');
@@ -1792,6 +1699,7 @@ document.getElementById('binO').addEventListener('click', e => {
       sweepState = 'harvested-oo';
       const sq = document.getElementById('sq-ones');
       if (sq) { sq.classList.remove('locked'); sq.style.pointerEvents = 'auto'; sq.classList.add('pulsing'); }
+      document.getElementById('dashDrawer').classList.remove('open');
     }
   }
 });
@@ -1799,7 +1707,12 @@ document.getElementById('binO').addEventListener('click', e => {
 document.getElementById('binT').addEventListener('click', e => {
   if (binTens >= 10 && sweepState !== 'record-carry-oo' && sweepState !== 'record-tens-to' && sweepState !== 'record-tens-ot') {
     const tgt = e.target.closest('.ready-to-fuse');
-    triggerRegroup(document.getElementById('binT'), 'tens', tgt ? tgt.getBoundingClientRect() : null);
+    if (tgt) {
+        const blocks = Array.from(document.getElementById('binT').querySelectorAll('.ten-bar, .ten-bar-v'));
+        const idx = blocks.indexOf(tgt);
+        const rowStart = Math.floor(idx / 10) * 10;
+        triggerRegroup(document.getElementById('binT'), 'tens', blocks.slice(rowStart, rowStart + 10));
+    }
   }
   else if (sweepState === 'record-carry-oo') {
     document.getElementById('binT').classList.remove('record-pulse');
@@ -1807,6 +1720,7 @@ document.getElementById('binT').addEventListener('click', e => {
     sweepState = 'harvested-oo';
     const sq = document.getElementById('sq-ones');
     if (sq) { sq.classList.remove('locked'); sq.style.pointerEvents = 'auto'; sq.classList.add('pulsing'); }
+    document.getElementById('dashDrawer').classList.remove('open');
   }
   else if (sweepState === 'record-tens-to') {
     document.getElementById('binT').classList.remove('record-pulse');
@@ -1830,6 +1744,7 @@ document.getElementById('binT').addEventListener('click', e => {
       sweepState = 'harvested-ot';
       const sq2 = document.getElementById('sq-tens');
       if (sq2) { sq2.classList.remove('locked'); sq2.style.pointerEvents = 'auto'; sq2.classList.add('pulsing'); }
+      document.getElementById('dashDrawer').classList.remove('open');
     }
   }
 });
@@ -1837,7 +1752,12 @@ document.getElementById('binT').addEventListener('click', e => {
 document.getElementById('binH').addEventListener('click', e => {
   if (binHundreds >= 10 && sweepState !== 'record-hundreds-to' && sweepState !== 'record-carry-ot' && sweepState !== 'record-hundreds-tt') {
     const tgt = e.target.closest('.ready-to-fuse');
-    triggerRegroup(document.getElementById('binH'), 'hundreds', tgt ? tgt.getBoundingClientRect() : null);
+    if (tgt) {
+        const blocks = Array.from(document.getElementById('binH').querySelectorAll('.hundred-flat'));
+        const idx = blocks.indexOf(tgt);
+        const rowStart = Math.floor(idx / 10) * 10;
+        triggerRegroup(document.getElementById('binH'), 'hundreds', blocks.slice(rowStart, rowStart + 10));
+    }
   }
   else if (sweepState === 'record-hundreds-to') {
     document.getElementById('binH').classList.remove('record-pulse');
@@ -1851,6 +1771,7 @@ document.getElementById('binH').addEventListener('click', e => {
     sweepState = 'harvested-ot';
     const sq2 = document.getElementById('sq-tens');
     if (sq2) { sq2.classList.remove('locked'); sq2.style.pointerEvents = 'auto'; sq2.classList.add('pulsing'); }
+    document.getElementById('dashDrawer').classList.remove('open');
   }
   else if (sweepState === 'record-hundreds-tt') {
     document.getElementById('binH').classList.remove('record-pulse');
@@ -1891,7 +1812,7 @@ document.getElementById('gCanvas').addEventListener('dblclick', e => {
     document.querySelectorAll('.squeegee,.sweep-fill,.harvest-fill,.quad-ghost,.block-fly,.carry-fly').forEach(e=>e.remove());
     ['binO','binT','binH','binTh'].forEach(id => {
       const el = document.getElementById(id);
-      if(el) { el.querySelectorAll('.cube,.ten-bar,.hundred-flat,.thousand-cube').forEach(e=>e.remove()); el.classList.remove('accepting', 'record-pulse'); }
+      if(el) { el.querySelectorAll('.cube,.ten-bar,.ten-bar-v,.hundred-flat,.thousand-cube').forEach(e=>e.remove()); el.classList.remove('accepting', 'record-pulse'); }
     });
     document.getElementById('algLock').classList.remove('active');
     document.getElementById('dashDrawer').classList.remove('open');
