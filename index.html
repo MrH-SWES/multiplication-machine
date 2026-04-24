@@ -151,6 +151,8 @@
       border: 1px solid rgba(0,0,0,0.08);
       border-radius: 12px;
       box-shadow: 0 12px 32px rgba(0,0,0,0.05);
+      margin: 0 auto; /* CENTER ARRAY HORIZONTALLY */
+      flex-shrink: 0;
     }
 
     #topRail {
@@ -348,17 +350,23 @@
       display: flex;
       gap: 1px;
     }
+    
+    /* Wrap-reverse builds rows from the bottom up */
     .bin.ones-bin, .bin.hundreds-bin { 
       flex-wrap: wrap-reverse; 
       align-content: flex-start;
-      width: calc((var(--cube-base) * 10) + 25px); 
+      /* Buffer increased to 34px to prevent premature row wrapping */
+      width: calc((var(--cube-base) * 10) + 34px); 
     }
+    
+    /* Column-reverse stacks horizontal sticks cleanly like a ladder */
     .bin.tens-bin { 
       flex-direction: column-reverse; 
       align-items: center; 
       justify-content: flex-start;
-      min-width: calc((var(--cube-base) * 10) + 25px); 
+      min-width: calc((var(--cube-base) * 10) + 34px); 
     }
+
     .bin.thousands-bin { border-color: rgba(76, 187, 23, 0.35); }
     .bin.hundreds-bin { border-color: rgba(255, 215, 0, 0.45); }
     .bin.tens-bin     { border-color: rgba(65,105,225,.35); }
@@ -1291,8 +1299,8 @@ function getBlockSize(type) {
   const cubeBase = parseFloat(style.getPropertyValue('--cube-base')) || 14;
   const cell = parseFloat(style.getPropertyValue('--cell')) || 14;
   if (type === 'cube')         return { w: cubeBase,      h: cubeBase };
-  if (type === 'ten-bar')      return { w: cell * 10, h: cubeBase };
-  if (type === 'hundred-flat') return { w: cell * 10, h: cell * 10 };
+  if (type === 'ten-bar')      return { w: cell * 10,     h: cubeBase };
+  if (type === 'hundred-flat') return { w: cell * 10,     h: cell * 10 };
   if (type === 'thousand-cube')return { w: cubeBase * 10, h: cubeBase * 10 };
   return { w: 14, h: 14 };
 }
@@ -1591,6 +1599,7 @@ document.getElementById('binT').addEventListener('click', () => {
     document.getElementById('binT').classList.remove('record-pulse');
     _popAD('c_T', binTens, 't'); // Record carry
     
+    // Carry recorded, unlock squeegee (Blocks physically stay in bin!)
     sweepState = 'harvested-oo';
     const sq = document.getElementById('sq-ones');
     if (sq) { sq.classList.remove('locked'); sq.style.pointerEvents = 'auto'; sq.classList.add('pulsing'); }
@@ -1614,11 +1623,11 @@ document.getElementById('binT').addEventListener('click', () => {
 
 document.getElementById('binH').addEventListener('click', () => {
   if (binHundreds >= 10 && sweepState !== 'record-hundreds-to') {
-    triggerRegroup(document.getElementById('binH'), 'hundreds');
+    if (typeof triggerRegroup === 'function') triggerRegroup(document.getElementById('binH'), 'hundreds');
   }
   else if (sweepState === 'record-hundreds-to') {
     document.getElementById('binH').classList.remove('record-pulse');
-    _popAD('p1_H', binHundreds, 'h'); // Record partial product hundreds
+    _popAD('p1_H', binHundreds, 'h'); // Record partial product hundreds (Gold)
     
     binHundreds = 0;
     rebuildBinDOM(document.getElementById('binH'), 'hundreds');
